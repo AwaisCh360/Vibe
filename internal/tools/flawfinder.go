@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -13,10 +15,10 @@ import (
 
 // RunFlawfinder runs Flawfinder on a C/C++ project directory.
 // Flawfinder is a Python tool so it must be installed in the environment.
-func RunFlawfinder(directory string) (map[string]interface{}, error) {
+func RunFlawfinder(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "flawfinder").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("flawfinder",
+	cmd := exec.CommandContext(ctx, "flawfinder",
 		"--csv",
 		"--quiet",
 		directory,

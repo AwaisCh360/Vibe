@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunKubeLinter runs kube-linter on a directory containing Kubernetes manifests.
-func RunKubeLinter(directory string) (map[string]interface{}, error) {
+func RunKubeLinter(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "kube-linter").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("kube-linter", "lint", "--format", "json", directory)
+	cmd := exec.CommandContext(ctx, "kube-linter", "lint", "--format", "json", directory)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunPsalm runs the Psalm PHP static analysis tool on a project directory.
-func RunPsalm(directory string) (map[string]interface{}, error) {
+func RunPsalm(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "psalm").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("psalm",
+	cmd := exec.CommandContext(ctx, "psalm",
 		"--output-format=json",
 		"--no-progress",
 		directory,

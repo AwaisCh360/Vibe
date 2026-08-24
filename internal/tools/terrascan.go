@@ -1,14 +1,16 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os/exec"
 )
 
 // RunTerrascan runs the multi-cloud IaC security scanner.
-func RunTerrascan(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("terrascan", "scan", "-i", "terraform", "-d", dirPath, "-o", "json")
+func RunTerrascan(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "terrascan", "scan", "-i", "terraform", "-d", dirPath, "-o", "json")
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
@@ -71,8 +73,8 @@ func mapTerrascanSeverity(sev string) string {
 }
 
 // RunKubesec runs kubesec risk scoring on Kubernetes manifests.
-func RunKubesec(filePath string) (map[string]interface{}, error) {
-	cmd := exec.Command("kubesec", "scan", filePath)
+func RunKubesec(ctx context.Context, filePath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "kubesec", "scan", filePath)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("kubesec error: %w", err)

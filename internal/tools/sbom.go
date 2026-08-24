@@ -1,14 +1,16 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os/exec"
 )
 
 // RunCdxgen generates a CycloneDX SBOM using cdxgen.
-func RunCdxgen(dirPath, outputPath string) error {
-	cmd := exec.Command("cdxgen", "-o", outputPath, dirPath)
+func RunCdxgen(ctx context.Context, dirPath, outputPath string) error {
+	cmd := exec.CommandContext(ctx, "cdxgen", "-o", outputPath, dirPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("cdxgen error: %w\n%s", err, string(output))
@@ -17,8 +19,8 @@ func RunCdxgen(dirPath, outputPath string) error {
 }
 
 // RunTrivySBOM generates a CycloneDX SBOM using Trivy.
-func RunTrivySBOM(dirPath, outputPath string) error {
-	cmd := exec.Command("trivy", "fs", "--format", "cyclonedx", "--output", outputPath, dirPath)
+func RunTrivySBOM(ctx context.Context, dirPath, outputPath string) error {
+	cmd := exec.CommandContext(ctx, "trivy", "fs", "--format", "cyclonedx", "--output", outputPath, dirPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("trivy sbom error: %w\n%s", err, string(output))
@@ -27,8 +29,8 @@ func RunTrivySBOM(dirPath, outputPath string) error {
 }
 
 // RunTrivySPDX generates an SPDX SBOM using Trivy.
-func RunTrivySPDX(dirPath, outputPath string) error {
-	cmd := exec.Command("trivy", "fs", "--format", "spdx-json", "--output", outputPath, dirPath)
+func RunTrivySPDX(ctx context.Context, dirPath, outputPath string) error {
+	cmd := exec.CommandContext(ctx, "trivy", "fs", "--format", "spdx-json", "--output", outputPath, dirPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("trivy spdx error: %w\n%s", err, string(output))
@@ -37,7 +39,7 @@ func RunTrivySPDX(dirPath, outputPath string) error {
 }
 
 // SupplyChainCheck runs dependency confusion and typosquatting checks.
-func SupplyChainCheck(dirPath string) (map[string]interface{}, error) {
+func SupplyChainCheck(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	findings := []interface{}{}
 
 	// Check for missing lockfiles
@@ -54,7 +56,7 @@ func SupplyChainCheck(dirPath string) (map[string]interface{}, error) {
 
 	for _, eco := range ecosystems {
 		if lockfile, ok := lockfileMap[eco]; ok {
-			if !fileExists(dirPath, lockfile) {
+			if !fileExists(ctx, dirPath, lockfile) {
 				findings = append(findings, map[string]interface{}{
 					"path":     eco,
 					"line":     0,
@@ -69,14 +71,14 @@ func SupplyChainCheck(dirPath string) (map[string]interface{}, error) {
 	return map[string]interface{}{"supply_chain": findings}, nil
 }
 
-func fileExists(dir, name string) bool {
-	_, err := exec.Command("test", "-f", dir+"/"+name).Output()
+func fileExists(ctx context.Context, dir, name string) bool {
+	_, err := exec.CommandContext(ctx, "test", "-f", dir+"/"+name).Output()
 	return err == nil
 }
 
 // ParseSBOMDependencies extracts dependencies from a CycloneDX SBOM.
-func ParseSBOMDependencies(sbomPath string) ([]SBOMComponent, error) {
-	cmd := exec.Command("cat", sbomPath)
+func ParseSBOMDependencies(ctx context.Context, sbomPath string) ([]SBOMComponent, error) {
+	cmd := exec.CommandContext(ctx, "cat", sbomPath)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err

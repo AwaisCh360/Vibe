@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunHadolint runs hadolint on all Dockerfiles found in the given directory.
-func RunHadolint(directory string) (map[string]interface{}, error) {
+func RunHadolint(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "hadolint").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("hadolint", "--format", "json", directory)
+	cmd := exec.CommandContext(ctx, "hadolint", "--format", "json", directory)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

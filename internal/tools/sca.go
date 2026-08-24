@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os"
@@ -47,8 +49,8 @@ func DetectPackageEcosystem(dirPath string) []string {
 }
 
 // RunNpmAudit runs npm audit and returns parsed findings.
-func RunNpmAudit(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("npm", "audit", "--json")
+func RunNpmAudit(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "npm", "audit", "--json")
 	cmd.Dir = dirPath
 	out, _ := cmd.Output() // npm audit exits non-zero when vulns found
 
@@ -102,8 +104,8 @@ func formatNpmAudit(raw map[string]interface{}) map[string]interface{} {
 }
 
 // RunPipAudit runs pip-audit for Python dependency checking.
-func RunPipAudit(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("pip-audit", "--format", "json", "--desc")
+func RunPipAudit(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "pip-audit", "--format", "json", "--desc")
 	cmd.Dir = dirPath
 	out, err := cmd.Output()
 	if err != nil {
@@ -143,18 +145,18 @@ func RunPipAudit(dirPath string) (map[string]interface{}, error) {
 }
 
 // RunCargoAuditSCA runs cargo-audit specifically for SCA (already exists as RunCargoAudit, this wraps it for SCA context).
-func RunCargoAuditSCA(dirPath string) (map[string]interface{}, error) {
-	return RunCargoAudit(dirPath)
+func RunCargoAuditSCA(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	return RunCargoAudit(ctx, dirPath)
 }
 
 // RunBundleAuditSCA runs bundle-audit for Ruby dependency checking.
-func RunBundleAuditSCA(dirPath string) (map[string]interface{}, error) {
-	return RunBundlerAudit(dirPath)
+func RunBundleAuditSCA(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	return RunBundlerAudit(ctx, dirPath)
 }
 
 // RunComposerAudit runs the PHP security checker for Composer dependencies.
-func RunComposerAudit(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("local-php-security-checker", "--format=json")
+func RunComposerAudit(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "local-php-security-checker", "--format=json")
 	cmd.Dir = dirPath
 	out, err := cmd.Output()
 	if err != nil {

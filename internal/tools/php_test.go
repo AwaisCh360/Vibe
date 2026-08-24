@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- PHPCS ---
 
 func TestRunPHPCS_EmptyDir(t *testing.T) {
-	result, err := RunPHPCS(t.TempDir())
+	result, err := RunPHPCS(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -45,7 +47,7 @@ func TestCategorizePHPCSResults_InvalidJSON(t *testing.T) {
 // --- Psalm ---
 
 func TestRunPsalm_EmptyDir(t *testing.T) {
-	result, err := RunPsalm(t.TempDir())
+	result, err := RunPsalm(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

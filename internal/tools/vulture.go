@@ -1,15 +1,17 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"os/exec"
 	"strings"
 )
 
-func RunVulture(directory string) (map[string]interface{}, error) {
+func RunVulture(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "vulture").Str("dir", directory).Msg("running")
-	vultureResults, err := runVultureOnRepo(directory)
+	vultureResults, err := runVultureOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "vulture").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -18,8 +20,8 @@ func RunVulture(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(ans), nil
 }
 
-func runVultureOnRepo(directory string) (string, error) {
-	cmd := exec.Command("vulture", directory)
+func runVultureOnRepo(ctx context.Context, directory string) (string, error) {
+	cmd := exec.CommandContext(ctx, "vulture", directory)
 	output, _ := cmd.Output()
 	return string(output), nil
 }

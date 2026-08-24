@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- Brakeman ---
 
 func TestRunBrakeman_EmptyDir(t *testing.T) {
-	result, err := RunBrakeman(t.TempDir())
+	result, err := RunBrakeman(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -48,7 +50,7 @@ func TestCategorizeBrakemanResults_InvalidJSON(t *testing.T) {
 // --- Bundler Audit ---
 
 func TestRunBundlerAudit_EmptyDir(t *testing.T) {
-	result, err := RunBundlerAudit(t.TempDir())
+	result, err := RunBundlerAudit(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

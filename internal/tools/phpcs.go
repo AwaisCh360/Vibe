@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunPHPCS runs PHP_CodeSniffer with security sniffs on a PHP project directory.
-func RunPHPCS(directory string) (map[string]interface{}, error) {
+func RunPHPCS(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "phpcs").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("phpcs",
+	cmd := exec.CommandContext(ctx, "phpcs",
 		"--standard=Generic,Security",
 		"--report=json",
 		"--extensions=php",

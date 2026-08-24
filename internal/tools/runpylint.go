@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -9,15 +11,15 @@ import (
 	"strings"
 )
 
-func RunPylint(directory string) (map[string]interface{}, error) {
+func RunPylint(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "pylint").Str("dir", directory).Msg("running")
-	pylintOutput := RunPylintOnRepo(directory)
+	pylintOutput := RunPylintOnRepo(ctx, directory)
 	categorizedResults := CategorizePylintResults(pylintOutput, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunPylintOnRepo(directory string) string {
-	cmd := exec.Command("pylint", "--recursive=y", directory, "-f", "json")
+func RunPylintOnRepo(ctx context.Context, directory string) string {
+	cmd := exec.CommandContext(ctx, "pylint", "--recursive=y", directory, "-f", "json")
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

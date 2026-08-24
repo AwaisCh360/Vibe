@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- hadolint ---
 
 func TestRunHadolint_EmptyDir(t *testing.T) {
-	result, err := RunHadolint(t.TempDir())
+	result, err := RunHadolint(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -48,7 +50,7 @@ func TestCategorizeHadolintResults_InvalidJSON(t *testing.T) {
 // --- tfsec ---
 
 func TestRunTfsec_EmptyDir(t *testing.T) {
-	result, err := RunTfsec(t.TempDir())
+	result, err := RunTfsec(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -79,7 +81,7 @@ func TestCategorizeTfsecResults_WithFinding(t *testing.T) {
 // --- KICS ---
 
 func TestRunKICS_EmptyDir(t *testing.T) {
-	result, err := RunKICS(t.TempDir())
+	result, err := RunKICS(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -106,7 +108,7 @@ func TestCategorizeKICSResults_WithFinding(t *testing.T) {
 // --- kube-linter ---
 
 func TestRunKubeLinter_EmptyDir(t *testing.T) {
-	result, err := RunKubeLinter(t.TempDir())
+	result, err := RunKubeLinter(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -133,7 +135,7 @@ func TestCategorizeKubeLinterResults_WithFinding(t *testing.T) {
 // --- kube-score ---
 
 func TestRunKubeScore_EmptyDir(t *testing.T) {
-	result, err := RunKubeScore(t.TempDir())
+	result, err := RunKubeScore(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

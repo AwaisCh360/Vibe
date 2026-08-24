@@ -45,7 +45,7 @@ func EnqueueScanTask(scanType, repoURL, language string, opts ...ScanOptions) (s
 	defer client.Close()
 
 	task := asynq.NewTask("scan:repo", taskPayload)
-	_, err = client.Enqueue(task, asynq.Queue("default"), asynq.MaxRetry(3), asynq.Timeout(30*time.Minute))
+	_, err = client.Enqueue(task, asynq.Queue("default"), asynq.MaxRetry(3), asynq.Timeout(120*time.Minute))
 	if err != nil {
 		return "", err
 	}

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunCargoGeiger runs cargo-geiger to detect unsafe Rust code and returns findings.
-func RunCargoGeiger(directory string) (map[string]interface{}, error) {
+func RunCargoGeiger(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "cargo-geiger").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("cargo", "geiger", "--output-format", "GitHubMarkdown", "--quiet")
+	cmd := exec.CommandContext(ctx, "cargo", "geiger", "--output-format", "GitHubMarkdown", "--quiet")
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -20,32 +21,32 @@ type DepUpdateResult struct {
 }
 
 // CheckOutdatedDeps checks for outdated dependencies across ecosystems.
-func CheckOutdatedDeps(dirPath string) ([]DepUpdateResult, error) {
+func CheckOutdatedDeps(ctx context.Context, dirPath string) ([]DepUpdateResult, error) {
 	var results []DepUpdateResult
 
 	// Go
 	if fileExistsAt(dirPath, "go.mod") {
-		goResults := checkGoOutdated(dirPath)
+		goResults := checkGoOutdated(ctx, dirPath)
 		results = append(results, goResults...)
 	}
 
 	// npm
 	if fileExistsAt(dirPath, "package.json") {
-		npmResults := checkNpmOutdated(dirPath)
+		npmResults := checkNpmOutdated(ctx, dirPath)
 		results = append(results, npmResults...)
 	}
 
 	// pip
 	if fileExistsAt(dirPath, "requirements.txt") {
-		pipResults := checkPipOutdated(dirPath)
+		pipResults := checkPipOutdated(ctx, dirPath)
 		results = append(results, pipResults...)
 	}
 
 	return results, nil
 }
 
-func checkGoOutdated(dirPath string) []DepUpdateResult {
-	cmd := exec.Command("go", "list", "-u", "-m", "-json", "all")
+func checkGoOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
+	cmd := exec.CommandContext(ctx, "go", "list", "-u", "-m", "-json", "all")
 	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {
@@ -80,8 +81,8 @@ func checkGoOutdated(dirPath string) []DepUpdateResult {
 	return results
 }
 
-func checkNpmOutdated(dirPath string) []DepUpdateResult {
-	cmd := exec.Command("npm", "outdated", "--json")
+func checkNpmOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
+	cmd := exec.CommandContext(ctx, "npm", "outdated", "--json")
 	cmd.Dir = dirPath
 	output, _ := cmd.Output() // exits non-zero when outdated packages found
 
@@ -107,8 +108,8 @@ func checkNpmOutdated(dirPath string) []DepUpdateResult {
 	return results
 }
 
-func checkPipOutdated(dirPath string) []DepUpdateResult {
-	cmd := exec.Command("pip", "list", "--outdated", "--format=json")
+func checkPipOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
+	cmd := exec.CommandContext(ctx, "pip", "list", "--outdated", "--format=json")
 	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {

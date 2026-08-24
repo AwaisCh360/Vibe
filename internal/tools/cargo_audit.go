@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -11,10 +13,10 @@ import (
 )
 
 // RunCargoAudit runs cargo-audit on a Rust project directory and returns findings.
-func RunCargoAudit(directory string) (map[string]interface{}, error) {
+func RunCargoAudit(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "cargo-audit").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("cargo", "audit", "--json")
+	cmd := exec.CommandContext(ctx, "cargo", "audit", "--json")
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

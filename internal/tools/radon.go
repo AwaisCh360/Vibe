@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -9,15 +11,15 @@ import (
 	"strings"
 )
 
-func RunRadon(directory string) (map[string]interface{}, error) {
+func RunRadon(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "radon").Str("dir", directory).Msg("running")
-	radonResults := RunRadonOnRepo(directory)
+	radonResults := RunRadonOnRepo(ctx, directory)
 	categorizedResults := CategorizeRadonResults(radonResults, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunRadonOnRepo(directory string) string {
-	cmd := exec.Command("radon", "cc", "-j", directory)
+func RunRadonOnRepo(ctx context.Context, directory string) string {
+	cmd := exec.CommandContext(ctx, "radon", "cc", "-j", directory)
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

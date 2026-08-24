@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,11 +12,11 @@ import (
 )
 
 // RunClippy runs cargo clippy (Rust linter) and returns findings.
-func RunClippy(directory string) (map[string]interface{}, error) {
+func RunClippy(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "clippy").Str("dir", directory).Msg("running")
 
 	// --message-format=json emits one JSON object per line
-	cmd := exec.Command("cargo", "clippy", "--message-format=json", "--", "-D", "warnings")
+	cmd := exec.CommandContext(ctx, "cargo", "clippy", "--message-format=json", "--", "-D", "warnings")
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

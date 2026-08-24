@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -12,14 +14,14 @@ import (
 )
 
 // RunMythril runs the Mythril symbolic execution tool on all .sol files in directory.
-func RunMythril(directory string) (map[string]interface{}, error) {
+func RunMythril(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "mythril").Str("dir", directory).Msg("running")
 
 	// Find all .sol files and run myth analyze on each.
 	categorized := utils.InitCategorizedResults()
 
 	// Use find to locate .sol files
-	findCmd := exec.Command("find", directory, "-name", "*.sol", "-not", "-path", "*/node_modules/*")
+	findCmd := exec.CommandContext(ctx, "find", directory, "-name", "*.sol", "-not", "-path", "*/node_modules/*")
 	var findOut bytes.Buffer
 	findCmd.Stdout = &findOut
 	findCmd.Run()
@@ -35,7 +37,7 @@ func RunMythril(directory string) (map[string]interface{}, error) {
 			continue
 		}
 
-		cmd := exec.Command("myth", "analyze", solFile,
+		cmd := exec.CommandContext(ctx, "myth", "analyze", solFile,
 			"--solv", "0.8.0",
 			"-o", "json",
 			"--execution-timeout", "60",

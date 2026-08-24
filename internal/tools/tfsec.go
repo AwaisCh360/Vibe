@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunTfsec runs tfsec on a Terraform project directory.
-func RunTfsec(directory string) (map[string]interface{}, error) {
+func RunTfsec(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "tfsec").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("tfsec", "--format", "json", "--no-color", directory)
+	cmd := exec.CommandContext(ctx, "tfsec", "--format", "json", "--no-color", directory)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

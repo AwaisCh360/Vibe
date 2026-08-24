@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"bufio"
 	"fmt"
 	"os"
@@ -34,7 +36,7 @@ var piiExcludes = []string{
 }
 
 // RunPIIDetection scans source files for PII patterns.
-func RunPIIDetection(dirPath string) (map[string]interface{}, error) {
+func RunPIIDetection(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	findings := []interface{}{}
 
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {

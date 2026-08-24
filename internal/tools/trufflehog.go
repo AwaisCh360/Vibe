@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
@@ -19,9 +21,9 @@ type Secret struct {
 	Secret string `json:"secret"`
 }
 
-func RunTrufflehog(directory string) (map[string]interface{}, error) {
+func RunTrufflehog(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "trufflehog").Str("dir", directory).Msg("running")
-	trufflehogResults, err := runTrufflehogOnRepo(directory)
+	trufflehogResults, err := runTrufflehogOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "trufflehog").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -30,25 +32,25 @@ func RunTrufflehog(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runTrufflehogOnRepo(directory string) (string, error) {
-	if err := setGitSafeDirectory(directory); err != nil {
+func runTrufflehogOnRepo(ctx context.Context, directory string) (string, error) {
+	if err := setGitSafeDirectory(ctx, directory); err != nil {
 		return "", err
 	}
-	defer unsetGitSafeDirectory(directory)
+	defer unsetGitSafeDirectory(ctx, directory)
 
-	cmd := exec.Command("trufflehog3", "--no-entropy", "--format", "JSON", directory)
+	cmd := exec.CommandContext(ctx, "trufflehog3", "--no-entropy", "--format", "JSON", directory)
 	output, _ := cmd.CombinedOutput()
 	return string(output), nil
 }
 
-func setGitSafeDirectory(directory string) error {
-	cmd := exec.Command("git", "config", "--global", "--add", "safe.directory", directory)
+func setGitSafeDirectory(ctx context.Context, directory string) error {
+	cmd := exec.CommandContext(ctx, "git", "config", "--global", "--add", "safe.directory", directory)
 	_, err := cmd.CombinedOutput()
 	return err
 }
 
-func unsetGitSafeDirectory(directory string) error {
-	cmd := exec.Command("git", "config", "--global", "--unset", "safe.directory", directory)
+func unsetGitSafeDirectory(ctx context.Context, directory string) error {
+	cmd := exec.CommandContext(ctx, "git", "config", "--global", "--unset", "safe.directory", directory)
 	_, err := cmd.CombinedOutput()
 	return err
 }

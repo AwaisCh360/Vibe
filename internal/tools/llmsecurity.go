@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"bufio"
 	"fmt"
 	"os"
@@ -132,7 +134,7 @@ var llmSecurityPatterns = []struct {
 }
 
 // RunLLMSecurityCheck scans source code for AI/LLM security issues.
-func RunLLMSecurityCheck(dirPath string) (map[string]interface{}, error) {
+func RunLLMSecurityCheck(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	findings := []interface{}{}
 
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {

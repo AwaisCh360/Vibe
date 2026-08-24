@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
@@ -9,15 +11,15 @@ import (
 	"strings"
 )
 
-func RunCheckov(directory string) (map[string]interface{}, error) {
+func RunCheckov(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "checkov").Str("dir", directory).Msg("running")
-	checkovResults := runCheckovOnRepo(directory)
+	checkovResults := runCheckovOnRepo(ctx, directory)
 	categorizedResults := categorizeCheckovResults(checkovResults, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runCheckovOnRepo(directory string) string {
-	cmd := exec.Command("checkov", "-d", directory, "--quiet", "--compact", "-o", "json")
+func runCheckovOnRepo(ctx context.Context, directory string) string {
+	cmd := exec.CommandContext(ctx, "checkov", "-d", directory, "--quiet", "--compact", "-o", "json")
 	result, _ := cmd.CombinedOutput()
 	return string(result)
 }

@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- Slither ---
 
 func TestRunSlither_EmptyDir(t *testing.T) {
-	result, err := RunSlither(t.TempDir())
+	result, err := RunSlither(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -73,7 +75,7 @@ func TestCategorizeSlitherResults_InvalidJSON(t *testing.T) {
 // --- Mythril ---
 
 func TestRunMythril_EmptyDir(t *testing.T) {
-	result, err := RunMythril(t.TempDir())
+	result, err := RunMythril(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

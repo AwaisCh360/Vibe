@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"bufio"
 	"fmt"
 	"os/exec"
@@ -10,12 +12,12 @@ import (
 )
 
 // RunGoFuzz runs Go's native fuzzing for a specified duration.
-func RunGoFuzz(dirPath string, timeout time.Duration) (map[string]interface{}, error) {
+func RunGoFuzz(ctx context.Context, dirPath string, timeout time.Duration) (map[string]interface{}, error) {
 	if timeout == 0 {
 		timeout = 60 * time.Second
 	}
 
-	cmd := exec.Command("go", "test", "-fuzz=Fuzz", fmt.Sprintf("-fuzztime=%s", timeout), "./...")
+	cmd := exec.CommandContext(ctx, "go", "test", "-fuzz=Fuzz", fmt.Sprintf("-fuzztime=%s", timeout), "./...")
 	cmd.Dir = dirPath
 
 	output, err := cmd.CombinedOutput()
@@ -60,7 +62,7 @@ func RunGoFuzz(dirPath string, timeout time.Duration) (map[string]interface{}, e
 }
 
 // RunAtheris runs Python Atheris fuzzer.
-func RunAtheris(dirPath string, timeout time.Duration) (map[string]interface{}, error) {
+func RunAtheris(ctx context.Context, dirPath string, timeout time.Duration) (map[string]interface{}, error) {
 	if timeout == 0 {
 		timeout = 60 * time.Second
 	}
@@ -73,7 +75,7 @@ func RunAtheris(dirPath string, timeout time.Duration) (map[string]interface{}, 
 
 	findings := []interface{}{}
 	for _, target := range targets {
-		cmd := exec.Command("python3", "-m", "atheris",
+		cmd := exec.CommandContext(ctx, "python3", "-m", "atheris",
 			fmt.Sprintf("-runs=%d", int(timeout.Seconds())*100),
 			target,
 		)
@@ -98,7 +100,7 @@ func RunAtheris(dirPath string, timeout time.Duration) (map[string]interface{}, 
 }
 
 // RunJSFuzz runs JavaScript jsfuzz fuzzer.
-func RunJSFuzz(dirPath string, timeout time.Duration) (map[string]interface{}, error) {
+func RunJSFuzz(ctx context.Context, dirPath string, timeout time.Duration) (map[string]interface{}, error) {
 	targets, _ := filepath.Glob(filepath.Join(dirPath, "*fuzz*.js"))
 	if len(targets) == 0 {
 		return map[string]interface{}{"fuzzing": []interface{}{}}, nil
@@ -106,7 +108,7 @@ func RunJSFuzz(dirPath string, timeout time.Duration) (map[string]interface{}, e
 
 	findings := []interface{}{}
 	for _, target := range targets {
-		cmd := exec.Command("jsfuzz", target, "--runs", "5000")
+		cmd := exec.CommandContext(ctx, "jsfuzz", target, "--runs", "5000")
 		cmd.Dir = dirPath
 
 		output, err := cmd.CombinedOutput()

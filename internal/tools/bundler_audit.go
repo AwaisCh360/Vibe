@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -11,10 +13,10 @@ import (
 )
 
 // RunBundlerAudit runs bundler-audit on a Ruby project to check for gem vulnerabilities.
-func RunBundlerAudit(directory string) (map[string]interface{}, error) {
+func RunBundlerAudit(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "bundler-audit").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("bundle", "audit", "check", "--update")
+	cmd := exec.CommandContext(ctx, "bundle", "audit", "check", "--update")
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

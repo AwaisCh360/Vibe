@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -11,9 +13,9 @@ import (
 	"strings"
 )
 
-func RunStaticCheck(directory string) (map[string]interface{}, error) {
+func RunStaticCheck(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "staticcheck").Str("dir", directory).Msg("running")
-	staticcheckResults, err := RunStaticcheckOnRepo(directory)
+	staticcheckResults, err := RunStaticcheckOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "staticcheck").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -22,11 +24,11 @@ func RunStaticCheck(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(newcategorisedresult), nil
 }
 
-func RunStaticcheckOnRepo(directory string) (string, error) {
+func RunStaticcheckOnRepo(ctx context.Context, directory string) (string, error) {
 	var cmd *exec.Cmd
 
 	if _, err := os.Stat(filepath.Join(directory, "go.mod")); err == nil {
-		cmd = exec.Command("staticcheck", "-f", "json", "./...")
+		cmd = exec.CommandContext(ctx, "staticcheck", "-f", "json", "./...")
 		cmd.Dir = directory
 	} else {
 		files := []string{}
@@ -42,7 +44,7 @@ func RunStaticcheckOnRepo(directory string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		cmd = exec.Command("staticcheck", "-f", "json")
+		cmd = exec.CommandContext(ctx, "staticcheck", "-f", "json")
 		cmd.Args = append(cmd.Args, files...)
 		cmd.Dir = directory
 	}

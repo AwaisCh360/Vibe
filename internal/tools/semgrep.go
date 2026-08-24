@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
@@ -9,9 +11,9 @@ import (
 	"strings"
 )
 
-func RunSemgrep(directory string, rules string) (map[string]interface{}, error) {
+func RunSemgrep(ctx context.Context, directory string, rules string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "semgrep").Str("dir", directory).Msg("running")
-	semgrepResults, err := runSemgrepOnRepo(directory, "--config=auto")
+	semgrepResults, err := runSemgrepOnRepo(ctx, directory, "--config=auto")
 	if err != nil {
 		logger.Warn().Str("tool", "semgrep").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -21,8 +23,8 @@ func RunSemgrep(directory string, rules string) (map[string]interface{}, error) 
 	return newcatresult, nil
 }
 
-func runSemgrepOnRepo(directory string, rules string) (string, error) {
-	cmd := exec.Command("semgrep", rules, directory, "--json")
+func runSemgrepOnRepo(ctx context.Context, directory string, rules string) (string, error) {
+	cmd := exec.CommandContext(ctx, "semgrep", rules, directory, "--json")
 	output, err := cmd.Output()
 	if err != nil {
 		// semgrep exits non-zero when it finds issues; treat stdout as valid output

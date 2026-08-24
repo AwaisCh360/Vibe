@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -12,10 +14,10 @@ import (
 
 // RunSpotBugs runs SpotBugs on a compiled Java project and returns findings.
 // It expects the project to have a build output at target/ or build/classes/.
-func RunSpotBugs(directory string) (map[string]interface{}, error) {
+func RunSpotBugs(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "spotbugs").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("spotbugs", "-textui", "-xml", directory)
+	cmd := exec.CommandContext(ctx, "spotbugs", "-textui", "-xml", directory)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

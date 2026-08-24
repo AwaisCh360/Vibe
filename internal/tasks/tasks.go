@@ -45,18 +45,18 @@ func toolTimeout() time.Duration {
 			return time.Duration(n) * time.Second
 		}
 	}
-	return 300 * time.Second
+	return 3600 * time.Second
 }
 
 // withTimeout wraps a tool runner so that it is cancelled after the configured
 // per-tool timeout. If the context expires the runner returns a ScanError.
-func withTimeout(name string, run func() toolResult) func() toolResult {
+func withTimeout(name string, run func(ctx context.Context) toolResult) func() toolResult {
 	return func() toolResult {
 		ctx, cancel := context.WithTimeout(context.Background(), toolTimeout())
 		defer cancel()
 
 		ch := make(chan toolResult, 1)
-		go func() { ch <- run() }()
+		go func() { ch <- run(ctx) }()
 
 		select {
 		case res := <-ch:
@@ -286,7 +286,7 @@ func applyProjectConfig(
 		if plugin.Language != "" && plugin.Language != language {
 			continue
 		}
-		filtered = append(filtered, withTimeout(plugin.Name, func() toolResult {
+		filtered = append(filtered, withTimeout(plugin.Name, func(ctx context.Context) toolResult {
 			result, err := plugin.RunPlugin(dirPath)
 			return toolResult{name: plugin.Name, result: result, err: err}
 		}))
@@ -333,8 +333,8 @@ func buildSimpleScanRunners(dirPath, language string) []func() toolResult {
 // tool name for each runner (parallel slices) so callers can apply config filtering.
 func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult, []string) {
 	runners := []func() toolResult{
-		withTimeout("semgrep", func() toolResult {
-			r, err := tools.RunSemgrep(dirPath, "--config=auto")
+		withTimeout("semgrep", func(ctx context.Context) toolResult {
+			r, err := tools.RunSemgrep(ctx, dirPath, "--config=auto")
 			return toolResult{"semgrep", r, err}
 		}),
 	}
@@ -343,156 +343,156 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	switch language {
 	case "go":
 		runners = append(runners,
-			withTimeout("gosec", func() toolResult {
-				r, err := tools.RunGosec(dirPath)
+			withTimeout("gosec", func(ctx context.Context) toolResult {
+				r, err := tools.RunGosec(ctx, dirPath)
 				return toolResult{"gosec", r, err}
 			}),
-			withTimeout("golint", func() toolResult {
-				r, err := tools.RunGolint(dirPath)
+			withTimeout("golint", func(ctx context.Context) toolResult {
+				r, err := tools.RunGolint(ctx, dirPath)
 				return toolResult{"golint", r, err}
 			}),
-			withTimeout("govet", func() toolResult {
-				r, err := tools.RunGovet(dirPath)
+			withTimeout("govet", func(ctx context.Context) toolResult {
+				r, err := tools.RunGovet(ctx, dirPath)
 				return toolResult{"govet", r, err}
 			}),
-			withTimeout("staticcheck", func() toolResult {
-				r, err := tools.RunStaticCheck(dirPath)
+			withTimeout("staticcheck", func(ctx context.Context) toolResult {
+				r, err := tools.RunStaticCheck(ctx, dirPath)
 				return toolResult{"staticcheck", r, err}
 			}),
-			withTimeout("gocyclo", func() toolResult {
-				r, err := tools.RunGocyclo(dirPath)
+			withTimeout("gocyclo", func(ctx context.Context) toolResult {
+				r, err := tools.RunGocyclo(ctx, dirPath)
 				return toolResult{"gocyclo", r, err}
 			}),
 		)
 		names = append(names, "gosec", "golint", "govet", "staticcheck", "gocyclo")
 	case "py":
 		runners = append(runners,
-			withTimeout("bandit", func() toolResult {
-				r, err := tools.RunBandit(dirPath)
+			withTimeout("bandit", func(ctx context.Context) toolResult {
+				r, err := tools.RunBandit(ctx, dirPath)
 				return toolResult{"bandit", r, err}
 			}),
-			withTimeout("pydocstyle", func() toolResult {
-				r, err := tools.RunPydocstyle(dirPath)
+			withTimeout("pydocstyle", func(ctx context.Context) toolResult {
+				r, err := tools.RunPydocstyle(ctx, dirPath)
 				return toolResult{"pydocstyle", r, err}
 			}),
-			withTimeout("radon", func() toolResult {
-				r, err := tools.RunRadon(dirPath)
+			withTimeout("radon", func(ctx context.Context) toolResult {
+				r, err := tools.RunRadon(ctx, dirPath)
 				return toolResult{"radon", r, err}
 			}),
-			withTimeout("pylint", func() toolResult {
-				r, err := tools.RunPylint(dirPath)
+			withTimeout("pylint", func(ctx context.Context) toolResult {
+				r, err := tools.RunPylint(ctx, dirPath)
 				return toolResult{"pylint", r, err}
 			}),
 		)
 		names = append(names, "bandit", "pydocstyle", "radon", "pylint")
 	case "js":
 		runners = append(runners,
-			withTimeout("eslint", func() toolResult {
-				r, err := tools.RunESLintOnRepo(dirPath)
+			withTimeout("eslint", func(ctx context.Context) toolResult {
+				r, err := tools.RunESLintOnRepo(ctx, dirPath)
 				return toolResult{"eslint", r, err}
 			}),
 		)
 		names = append(names, "eslint")
 	case "rust":
 		runners = append(runners,
-			withTimeout("cargo-audit", func() toolResult {
-				r, err := tools.RunCargoAudit(dirPath)
+			withTimeout("cargo-audit", func(ctx context.Context) toolResult {
+				r, err := tools.RunCargoAudit(ctx, dirPath)
 				return toolResult{"cargo-audit", r, err}
 			}),
-			withTimeout("cargo-geiger", func() toolResult {
-				r, err := tools.RunCargoGeiger(dirPath)
+			withTimeout("cargo-geiger", func(ctx context.Context) toolResult {
+				r, err := tools.RunCargoGeiger(ctx, dirPath)
 				return toolResult{"cargo-geiger", r, err}
 			}),
-			withTimeout("clippy", func() toolResult {
-				r, err := tools.RunClippy(dirPath)
+			withTimeout("clippy", func(ctx context.Context) toolResult {
+				r, err := tools.RunClippy(ctx, dirPath)
 				return toolResult{"clippy", r, err}
 			}),
 		)
 		names = append(names, "cargo-audit", "cargo-geiger", "clippy")
 	case "java":
 		runners = append(runners,
-			withTimeout("spotbugs", func() toolResult {
-				r, err := tools.RunSpotBugs(dirPath)
+			withTimeout("spotbugs", func(ctx context.Context) toolResult {
+				r, err := tools.RunSpotBugs(ctx, dirPath)
 				return toolResult{"spotbugs", r, err}
 			}),
-			withTimeout("pmd", func() toolResult {
-				r, err := tools.RunPMD(dirPath)
+			withTimeout("pmd", func(ctx context.Context) toolResult {
+				r, err := tools.RunPMD(ctx, dirPath)
 				return toolResult{"pmd", r, err}
 			}),
-			withTimeout("dependency-check", func() toolResult {
-				r, err := tools.RunDependencyCheck(dirPath)
+			withTimeout("dependency-check", func(ctx context.Context) toolResult {
+				r, err := tools.RunDependencyCheck(ctx, dirPath)
 				return toolResult{"dependency-check", r, err}
 			}),
 		)
 		names = append(names, "spotbugs", "pmd", "dependency-check")
 	case "ruby":
 		runners = append(runners,
-			withTimeout("brakeman", func() toolResult {
-				r, err := tools.RunBrakeman(dirPath)
+			withTimeout("brakeman", func(ctx context.Context) toolResult {
+				r, err := tools.RunBrakeman(ctx, dirPath)
 				return toolResult{"brakeman", r, err}
 			}),
-			withTimeout("bundler-audit", func() toolResult {
-				r, err := tools.RunBundlerAudit(dirPath)
+			withTimeout("bundler-audit", func(ctx context.Context) toolResult {
+				r, err := tools.RunBundlerAudit(ctx, dirPath)
 				return toolResult{"bundler-audit", r, err}
 			}),
 		)
 		names = append(names, "brakeman", "bundler-audit")
 	case "php":
 		runners = append(runners,
-			withTimeout("phpcs", func() toolResult {
-				r, err := tools.RunPHPCS(dirPath)
+			withTimeout("phpcs", func(ctx context.Context) toolResult {
+				r, err := tools.RunPHPCS(ctx, dirPath)
 				return toolResult{"phpcs", r, err}
 			}),
-			withTimeout("psalm", func() toolResult {
-				r, err := tools.RunPsalm(dirPath)
+			withTimeout("psalm", func(ctx context.Context) toolResult {
+				r, err := tools.RunPsalm(ctx, dirPath)
 				return toolResult{"psalm", r, err}
 			}),
 		)
 		names = append(names, "phpcs", "psalm")
 	case "c":
 		runners = append(runners,
-			withTimeout("cppcheck", func() toolResult {
-				r, err := tools.RunCppcheck(dirPath)
+			withTimeout("cppcheck", func(ctx context.Context) toolResult {
+				r, err := tools.RunCppcheck(ctx, dirPath)
 				return toolResult{"cppcheck", r, err}
 			}),
-			withTimeout("flawfinder", func() toolResult {
-				r, err := tools.RunFlawfinder(dirPath)
+			withTimeout("flawfinder", func(ctx context.Context) toolResult {
+				r, err := tools.RunFlawfinder(ctx, dirPath)
 				return toolResult{"flawfinder", r, err}
 			}),
 		)
 		names = append(names, "cppcheck", "flawfinder")
 	case "iac":
 		runners = append(runners,
-			withTimeout("hadolint", func() toolResult {
-				r, err := tools.RunHadolint(dirPath)
+			withTimeout("hadolint", func(ctx context.Context) toolResult {
+				r, err := tools.RunHadolint(ctx, dirPath)
 				return toolResult{"hadolint", r, err}
 			}),
-			withTimeout("tfsec", func() toolResult {
-				r, err := tools.RunTfsec(dirPath)
+			withTimeout("tfsec", func(ctx context.Context) toolResult {
+				r, err := tools.RunTfsec(ctx, dirPath)
 				return toolResult{"tfsec", r, err}
 			}),
-			withTimeout("kics", func() toolResult {
-				r, err := tools.RunKICS(dirPath)
+			withTimeout("kics", func(ctx context.Context) toolResult {
+				r, err := tools.RunKICS(ctx, dirPath)
 				return toolResult{"kics", r, err}
 			}),
-			withTimeout("kube-linter", func() toolResult {
-				r, err := tools.RunKubeLinter(dirPath)
+			withTimeout("kube-linter", func(ctx context.Context) toolResult {
+				r, err := tools.RunKubeLinter(ctx, dirPath)
 				return toolResult{"kube-linter", r, err}
 			}),
-			withTimeout("kube-score", func() toolResult {
-				r, err := tools.RunKubeScore(dirPath)
+			withTimeout("kube-score", func(ctx context.Context) toolResult {
+				r, err := tools.RunKubeScore(ctx, dirPath)
 				return toolResult{"kube-score", r, err}
 			}),
 		)
 		names = append(names, "hadolint", "tfsec", "kics", "kube-linter", "kube-score")
 	case "sol":
 		runners = append(runners,
-			withTimeout("slither", func() toolResult {
-				r, err := tools.RunSlither(dirPath)
+			withTimeout("slither", func(ctx context.Context) toolResult {
+				r, err := tools.RunSlither(ctx, dirPath)
 				return toolResult{"slither", r, err}
 			}),
-			withTimeout("mythril", func() toolResult {
-				r, err := tools.RunMythril(dirPath)
+			withTimeout("mythril", func(ctx context.Context) toolResult {
+				r, err := tools.RunMythril(ctx, dirPath)
 				return toolResult{"mythril", r, err}
 			}),
 		)
@@ -505,42 +505,42 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 // RunAdvancedScans runs the full advanced tool suite concurrently.
 func RunAdvancedScans(dirPath string, language string) (map[string]interface{}, []ScanError, error) {
 	runners := []func() toolResult{
-		withTimeout("jscpd", func() toolResult {
-			r, err := tools.RunJSCPD(dirPath)
+		withTimeout("jscpd", func(ctx context.Context) toolResult {
+			r, err := tools.RunJSCPD(ctx, dirPath)
 			return toolResult{"jscpd", r, err}
 		}),
-		withTimeout("checkov", func() toolResult {
-			r, err := tools.RunCheckov(dirPath)
+		withTimeout("checkov", func(ctx context.Context) toolResult {
+			r, err := tools.RunCheckov(ctx, dirPath)
 			return toolResult{"checkov", r, err}
 		}),
-		withTimeout("trufflehog", func() toolResult {
-			r, err := tools.RunTrufflehog(dirPath)
+		withTimeout("trufflehog", func(ctx context.Context) toolResult {
+			r, err := tools.RunTrufflehog(ctx, dirPath)
 			return toolResult{"trufflehog", r, err}
 		}),
-		withTimeout("trivy", func() toolResult {
-			r, err := tools.RunTrivy(dirPath)
+		withTimeout("trivy", func(ctx context.Context) toolResult {
+			r, err := tools.RunTrivy(ctx, dirPath)
 			return toolResult{"trivy", r, err}
 		}),
-		withTimeout("osv-scanner", func() toolResult {
-			r, err := tools.RunOSVScanner(dirPath)
+		withTimeout("osv-scanner", func(ctx context.Context) toolResult {
+			r, err := tools.RunOSVScanner(ctx, dirPath)
 			return toolResult{"osv-scanner", r, err}
 		}),
 	}
 
 	switch language {
 	case "go":
-		runners = append(runners, withTimeout("deadcode", func() toolResult {
-			r, err := tools.RunGoDeadcode(dirPath)
+		runners = append(runners, withTimeout("deadcode", func(ctx context.Context) toolResult {
+			r, err := tools.RunGoDeadcode(ctx, dirPath)
 			return toolResult{"deadcode", r, err}
 		}))
 	case "py":
-		runners = append(runners, withTimeout("vulture", func() toolResult {
-			r, err := tools.RunVulture(dirPath)
+		runners = append(runners, withTimeout("vulture", func(ctx context.Context) toolResult {
+			r, err := tools.RunVulture(ctx, dirPath)
 			return toolResult{"vulture", r, err}
 		}))
 	case "js":
-		runners = append(runners, withTimeout("eslint-advanced", func() toolResult {
-			r, err := tools.RunESLintAdvanced(dirPath)
+		runners = append(runners, withTimeout("eslint-advanced", func(ctx context.Context) toolResult {
+			r, err := tools.RunESLintAdvanced(ctx, dirPath)
 			return toolResult{"eslint-advanced", r, err}
 		}))
 	}

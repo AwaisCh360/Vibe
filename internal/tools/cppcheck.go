@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunCppcheck runs cppcheck on a C/C++ project directory.
-func RunCppcheck(directory string) (map[string]interface{}, error) {
+func RunCppcheck(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "cppcheck").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("cppcheck",
+	cmd := exec.CommandContext(ctx, "cppcheck",
 		"--enable=all",
 		"--xml",
 		"--xml-version=2",

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
@@ -8,9 +10,9 @@ import (
 	"strings"
 )
 
-func RunOSVScanner(directory string) (map[string]interface{}, error) {
+func RunOSVScanner(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "osv-scanner").Str("dir", directory).Msg("running")
-	result, err := runOSVScannerOnRepo(directory)
+	result, err := runOSVScannerOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "osv-scanner").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -19,8 +21,8 @@ func RunOSVScanner(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(ans), nil
 }
 
-func runOSVScannerOnRepo(directory string) (string, error) {
-	cmd := exec.Command("osv-scanner", "--format", "json", directory)
+func runOSVScannerOnRepo(ctx context.Context, directory string) (string, error) {
+	cmd := exec.CommandContext(ctx, "osv-scanner", "--format", "json", directory)
 	output, err := cmd.Output()
 	if err != nil {
 		// osv-scanner exits non-zero when vulnerabilities are found

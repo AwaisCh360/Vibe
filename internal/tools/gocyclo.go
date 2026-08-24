@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -8,9 +10,9 @@ import (
 	"strings"
 )
 
-func RunGocyclo(directory string) (map[string]interface{}, error) {
+func RunGocyclo(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "gocyclo").Str("dir", directory).Msg("running")
-	gocycloResults, err := RunGoCycloOnRepo(directory)
+	gocycloResults, err := RunGoCycloOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "gocyclo").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -19,8 +21,8 @@ func RunGocyclo(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunGoCycloOnRepo(directory string) (string, error) {
-	cmd := exec.Command("gocyclo", directory)
+func RunGoCycloOnRepo(ctx context.Context, directory string) (string, error) {
+	cmd := exec.CommandContext(ctx, "gocyclo", directory)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out

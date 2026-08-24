@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"os"
@@ -9,16 +11,16 @@ import (
 	"strings"
 )
 
-func RunGovet(directory string) (map[string]interface{}, error) {
+func RunGovet(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "govet").Str("dir", directory).Msg("running")
-	govetResults := runGovetOnRepo(directory)
+	govetResults := runGovetOnRepo(ctx, directory)
 	categorizedResults := categorizeGovetResults(govetResults, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runGovetOnRepo(directory string) string {
+func runGovetOnRepo(ctx context.Context, directory string) string {
 	if _, err := os.Stat(filepath.Join(directory, "go.mod")); err == nil {
-		cmd := exec.Command("go", "vet", "./...")
+		cmd := exec.CommandContext(ctx, "go", "vet", "./...")
 		cmd.Dir = directory
 		output, _ := cmd.CombinedOutput()
 		return strings.TrimSpace(string(output))
@@ -42,7 +44,7 @@ func runGovetOnRepo(directory string) string {
 		return ""
 	}
 
-	cmd := exec.Command("go", append([]string{"vet"}, files...)...)
+	cmd := exec.CommandContext(ctx, "go", append([]string{"vet"}, files...)...)
 	cmd.Dir = directory
 	output, err := cmd.CombinedOutput()
 	if err != nil {

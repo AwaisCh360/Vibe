@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"bufio"
 	"fmt"
 	"os"
@@ -37,7 +39,7 @@ var networkPatterns = []struct {
 }
 
 // RunNetworkConfigCheck scans configuration files for network security issues.
-func RunNetworkConfigCheck(dirPath string) (map[string]interface{}, error) {
+func RunNetworkConfigCheck(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	findings := []interface{}{}
 
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -13,7 +15,7 @@ import (
 )
 
 // RunKICS runs Checkmarx KICS (multi-IaC scanner) on the given directory.
-func RunKICS(directory string) (map[string]interface{}, error) {
+func RunKICS(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "kics").Str("dir", directory).Msg("running")
 
 	outDir, err := os.MkdirTemp("", "kics-out")
@@ -22,7 +24,7 @@ func RunKICS(directory string) (map[string]interface{}, error) {
 	}
 	defer os.RemoveAll(outDir)
 
-	cmd := exec.Command("kics", "scan",
+	cmd := exec.CommandContext(ctx, "kics", "scan",
 		"-p", directory,
 		"-o", outDir,
 		"--report-formats", "json",

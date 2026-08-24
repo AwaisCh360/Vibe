@@ -1,6 +1,8 @@
 package tasks
 
 import (
+	"context"
+
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,8 +19,8 @@ import (
 
 func TestToolTimeout_Default(t *testing.T) {
 	os.Unsetenv("TOOL_TIMEOUT_SECONDS")
-	if got := toolTimeout(); got != 300*time.Second {
-		t.Errorf("toolTimeout() = %v, want 300s", got)
+	if got := toolTimeout(); got != 3600*time.Second {
+		t.Errorf("toolTimeout() = %v, want 3600s", got)
 	}
 }
 
@@ -33,8 +35,8 @@ func TestToolTimeout_EnvVar(t *testing.T) {
 func TestToolTimeout_InvalidEnvVar(t *testing.T) {
 	os.Setenv("TOOL_TIMEOUT_SECONDS", "bad")
 	defer os.Unsetenv("TOOL_TIMEOUT_SECONDS")
-	if got := toolTimeout(); got != 300*time.Second {
-		t.Errorf("toolTimeout() with invalid env = %v, want 300s", got)
+	if got := toolTimeout(); got != 3600*time.Second {
+		t.Errorf("toolTimeout() with invalid env = %v, want 3600s", got)
 	}
 }
 
@@ -42,7 +44,7 @@ func TestWithTimeout_CompletesBeforeDeadline(t *testing.T) {
 	os.Setenv("TOOL_TIMEOUT_SECONDS", "5")
 	defer os.Unsetenv("TOOL_TIMEOUT_SECONDS")
 
-	runner := withTimeout("fast-tool", func() toolResult {
+	runner := withTimeout("fast-tool", func(ctx context.Context) toolResult {
 		return toolResult{name: "fast-tool", result: map[string]interface{}{"k": []interface{}{"v"}}}
 	})
 	res := runner()
@@ -55,7 +57,7 @@ func TestWithTimeout_CancelledOnExpiry(t *testing.T) {
 	os.Setenv("TOOL_TIMEOUT_SECONDS", "1")
 	defer os.Unsetenv("TOOL_TIMEOUT_SECONDS")
 
-	runner := withTimeout("slow-tool", func() toolResult {
+	runner := withTimeout("slow-tool", func(ctx context.Context) toolResult {
 		time.Sleep(3 * time.Second)
 		return toolResult{name: "slow-tool"}
 	})

@@ -1,15 +1,17 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"os/exec"
 	"strings"
 )
 
-func RunGoDeadcode(directory string) (map[string]interface{}, error) {
+func RunGoDeadcode(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "deadcode").Str("dir", directory).Msg("running")
-	results, err := RunDecodeOnRepO(directory)
+	results, err := RunDecodeOnRepO(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "deadcode").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -18,8 +20,8 @@ func RunGoDeadcode(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(catresult), nil
 }
 
-func RunDecodeOnRepO(directory string) (string, error) {
-	cmd := exec.Command("deadcode", directory)
+func RunDecodeOnRepO(ctx context.Context, directory string) (string, error) {
+	cmd := exec.CommandContext(ctx, "deadcode", directory)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Debug().Str("tool", "deadcode").Err(err).Msg("non-zero exit (may still have results)")

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -34,9 +36,9 @@ func GetPracticesFromJSON(data []CWEData, language string, cwe string) map[strin
 	return map[string]string{}
 }
 
-func RunGosec(directory string) (map[string]interface{}, error) {
+func RunGosec(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "gosec").Str("dir", directory).Msg("running")
-	results, err := RunGosecOnRepo(directory)
+	results, err := RunGosecOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "gosec").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -45,8 +47,8 @@ func RunGosec(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunGosecOnRepo(directory string) (string, error) {
-	cmd := exec.Command("gosec", "-fmt=json", "./...")
+func RunGosecOnRepo(ctx context.Context, directory string) (string, error) {
+	cmd := exec.CommandContext(ctx, "gosec", "-fmt=json", "./...")
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

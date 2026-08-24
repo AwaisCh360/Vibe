@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- SpotBugs ---
 
 func TestRunSpotBugs_EmptyDir(t *testing.T) {
-	result, err := RunSpotBugs(t.TempDir())
+	result, err := RunSpotBugs(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -56,7 +58,7 @@ func TestCategorizeSpotBugsResults_WithBug(t *testing.T) {
 // --- PMD ---
 
 func TestRunPMD_EmptyDir(t *testing.T) {
-	result, err := RunPMD(t.TempDir())
+	result, err := RunPMD(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -97,7 +99,7 @@ func TestCategorizePMDResults_InvalidJSON(t *testing.T) {
 // --- OWASP Dependency-Check ---
 
 func TestRunDependencyCheck_EmptyDir(t *testing.T) {
-	result, err := RunDependencyCheck(t.TempDir())
+	result, err := RunDependencyCheck(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

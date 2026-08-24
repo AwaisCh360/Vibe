@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"bufio"
 	"fmt"
 	"os"
@@ -44,7 +46,7 @@ var weakCryptoPatterns = []struct {
 }
 
 // RunCryptoHealthCheck scans source code for weak cryptographic patterns.
-func RunCryptoHealthCheck(dirPath string) (map[string]interface{}, error) {
+func RunCryptoHealthCheck(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	findings := []interface{}{}
 
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {

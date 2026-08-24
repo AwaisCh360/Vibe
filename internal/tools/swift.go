@@ -1,14 +1,16 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os/exec"
 )
 
 // RunSwiftLint runs SwiftLint for Swift code security checks.
-func RunSwiftLint(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("swiftlint", "lint", "--reporter", "json", dirPath)
+func RunSwiftLint(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "swiftlint", "lint", "--reporter", "json", dirPath)
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() <= 2 {
@@ -53,8 +55,8 @@ func parseSwiftLintOutput(output []byte) (map[string]interface{}, error) {
 }
 
 // RunShellCheck runs ShellCheck for shell script analysis.
-func RunShellCheck(filePath string) (map[string]interface{}, error) {
-	cmd := exec.Command("shellcheck", "--format=json", filePath)
+func RunShellCheck(ctx context.Context, filePath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "shellcheck", "--format=json", filePath)
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {

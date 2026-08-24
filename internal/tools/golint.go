@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -9,9 +11,9 @@ import (
 	"strings"
 )
 
-func RunGolint(directory string) (map[string]interface{}, error) {
+func RunGolint(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "golint").Str("dir", directory).Msg("running")
-	golintResults, err := runGolintOnRepo(directory)
+	golintResults, err := runGolintOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "golint").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -20,8 +22,8 @@ func RunGolint(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runGolintOnRepo(directory string) (string, error) {
-	cmd := exec.Command("golint", "./...")
+func runGolintOnRepo(ctx context.Context, directory string) (string, error) {
+	cmd := exec.CommandContext(ctx, "golint", "./...")
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

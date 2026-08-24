@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- cargo-audit ---
 
 func TestRunCargoAudit_EmptyOutput(t *testing.T) {
-	result, err := RunCargoAudit(t.TempDir())
+	result, err := RunCargoAudit(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -56,7 +58,7 @@ func TestCategorizeCargoAuditResults_InvalidJSON(t *testing.T) {
 // --- cargo-geiger ---
 
 func TestRunCargoGeiger_EmptyOutput(t *testing.T) {
-	result, err := RunCargoGeiger(t.TempDir())
+	result, err := RunCargoGeiger(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -84,7 +86,7 @@ func TestCategorizeCargoGeigerResults_WithUnsafe(t *testing.T) {
 // --- clippy ---
 
 func TestRunClippy_EmptyDir(t *testing.T) {
-	result, err := RunClippy(t.TempDir())
+	result, err := RunClippy(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

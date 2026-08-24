@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -31,15 +33,15 @@ type BanditIssue struct {
 	EndLine    int      `json:"endLine"`
 }
 
-func RunBandit(directory string) (map[string]interface{}, error) {
+func RunBandit(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "bandit").Str("dir", directory).Msg("running")
-	results := RunBanditOnRepo(directory)
+	results := RunBanditOnRepo(ctx, directory)
 	categorizedResults := CategorizeBanditResults(results)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunBanditOnRepo(directory string) string {
-	cmd := exec.Command("bandit", "-r", directory, "-f", "json")
+func RunBanditOnRepo(ctx context.Context, directory string) string {
+	cmd := exec.CommandContext(ctx, "bandit", "-r", directory, "-f", "json")
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

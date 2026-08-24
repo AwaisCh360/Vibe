@@ -1,13 +1,15 @@
 package internal
 
 import (
+	"context"
+
 	"testing"
 )
 
 // --- cppcheck ---
 
 func TestRunCppcheck_EmptyDir(t *testing.T) {
-	result, err := RunCppcheck(t.TempDir())
+	result, err := RunCppcheck(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -72,7 +74,7 @@ func TestCategorizeCppcheckResults_InvalidXML(t *testing.T) {
 // --- Flawfinder ---
 
 func TestRunFlawfinder_EmptyDir(t *testing.T) {
-	result, err := RunFlawfinder(t.TempDir())
+	result, err := RunFlawfinder(context.Background(), t.TempDir())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

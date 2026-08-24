@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,7 +11,7 @@ import (
 )
 
 // RunOpenAPIScan scans an OpenAPI/Swagger specification for security issues.
-func RunOpenAPIScan(dirPath string) (map[string]interface{}, error) {
+func RunOpenAPIScan(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	// Find OpenAPI spec files
 	specFiles := []string{
 		"openapi.yaml", "openapi.yml", "openapi.json",

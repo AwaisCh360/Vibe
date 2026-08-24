@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -8,8 +10,8 @@ import (
 )
 
 // RunGrype runs Grype vulnerability scanner on a container image or directory.
-func RunGrype(target string) (map[string]interface{}, error) {
-	cmd := exec.Command("grype", target, "-o", "json")
+func RunGrype(ctx context.Context, target string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "grype", target, "-o", "json")
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
@@ -23,8 +25,8 @@ func RunGrype(target string) (map[string]interface{}, error) {
 }
 
 // RunTrivyImage runs Trivy on a container image.
-func RunTrivyImage(imageRef string) (map[string]interface{}, error) {
-	cmd := exec.Command("trivy", "image", "--format", "json", imageRef)
+func RunTrivyImage(ctx context.Context, imageRef string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "trivy", "image", "--format", "json", imageRef)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("trivy image error: %w", err)

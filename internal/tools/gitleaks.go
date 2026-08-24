@@ -1,14 +1,16 @@
 package internal
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"os/exec"
 )
 
 // RunGitleaks runs the gitleaks secret scanner on the given directory.
-func RunGitleaks(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("gitleaks", "detect",
+func RunGitleaks(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "gitleaks", "detect",
 		"--source", dirPath,
 		"--report-format", "json",
 		"--report-path", "/dev/stdout",
@@ -29,8 +31,8 @@ func RunGitleaks(dirPath string) (map[string]interface{}, error) {
 }
 
 // RunGitleaksHistory runs gitleaks against the full git history.
-func RunGitleaksHistory(dirPath string) (map[string]interface{}, error) {
-	cmd := exec.Command("gitleaks", "detect",
+func RunGitleaksHistory(ctx context.Context, dirPath string) (map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "gitleaks", "detect",
 		"--source", dirPath,
 		"--report-format", "json",
 		"--report-path", "/dev/stdout",

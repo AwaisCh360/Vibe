@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
@@ -13,9 +15,9 @@ const (
 	DUPLICATE_CODE_LINE_THRESHOLD = 10
 )
 
-func RunJSCPD(directory string) (map[string]interface{}, error) {
+func RunJSCPD(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "jscpd").Str("dir", directory).Msg("running")
-	duplicates, err := RunJSCPDOnRepo(directory)
+	duplicates, err := RunJSCPDOnRepo(ctx, directory)
 	if err != nil {
 		logger.Warn().Str("tool", "jscpd").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -24,8 +26,8 @@ func RunJSCPD(directory string) (map[string]interface{}, error) {
 	return utils.ConvertCategorizedResults(results), nil
 }
 
-func RunJSCPDOnRepo(directory string) ([]map[string]interface{}, error) {
-	cmd := exec.Command("jscpd", directory, "-r", "json", "-o", ".")
+func RunJSCPDOnRepo(ctx context.Context, directory string) ([]map[string]interface{}, error) {
+	cmd := exec.CommandContext(ctx, "jscpd", directory, "-r", "json", "-o", ".")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Warn().Str("tool", "jscpd").Err(err).Str("output", string(output)).Msg("tool exited with error")

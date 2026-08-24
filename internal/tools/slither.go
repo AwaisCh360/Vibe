@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -11,10 +13,10 @@ import (
 )
 
 // RunSlither runs the Slither Solidity static analyzer on a project directory.
-func RunSlither(directory string) (map[string]interface{}, error) {
+func RunSlither(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "slither").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("slither", ".", "--json", "-")
+	cmd := exec.CommandContext(ctx, "slither", ".", "--json", "-")
 	cmd.Dir = directory
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

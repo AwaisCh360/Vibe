@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -10,10 +12,10 @@ import (
 )
 
 // RunBrakeman runs the Brakeman Rails security scanner on a Ruby project directory.
-func RunBrakeman(directory string) (map[string]interface{}, error) {
+func RunBrakeman(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "brakeman").Str("dir", directory).Msg("running")
 
-	cmd := exec.Command("brakeman", "-f", "json", "-q", directory)
+	cmd := exec.CommandContext(ctx, "brakeman", "-f", "json", "-q", directory)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

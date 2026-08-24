@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
@@ -40,9 +42,9 @@ type TrivyResult struct {
 	} `json:"Results"`
 }
 
-func RunTrivy(target string) (map[string]interface{}, error) {
+func RunTrivy(ctx context.Context, target string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "trivy").Str("target", target).Msg("running")
-	cmd := exec.Command("trivy", "fs", "--format", "json", target)
+	cmd := exec.CommandContext(ctx, "trivy", "fs", "--format", "json", target)
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Debug().Str("tool", "trivy").Err(err).Msg("non-zero exit (may still have results)")

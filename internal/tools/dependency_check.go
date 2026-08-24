@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"bytes"
@@ -13,7 +15,7 @@ import (
 )
 
 // RunDependencyCheck runs OWASP Dependency-Check on a Java project directory.
-func RunDependencyCheck(directory string) (map[string]interface{}, error) {
+func RunDependencyCheck(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "dependency-check").Str("dir", directory).Msg("running")
 
 	// Dependency-Check writes a JSON report to a temp output dir.
@@ -23,7 +25,7 @@ func RunDependencyCheck(directory string) (map[string]interface{}, error) {
 	}
 	defer os.RemoveAll(outDir)
 
-	cmd := exec.Command("dependency-check",
+	cmd := exec.CommandContext(ctx, "dependency-check",
 		"--scan", directory,
 		"--format", "JSON",
 		"--out", outDir,
