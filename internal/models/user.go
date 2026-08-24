@@ -8,6 +8,9 @@ import (
 // User represents a registered user in the SaaS platform.
 type User struct {
 	gorm.Model
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	CompanyName  string `json:"company_name"`
 	Email        string `gorm:"uniqueIndex;not null" json:"email"`
 	PasswordHash string `gorm:"not null" json:"-"`
 }

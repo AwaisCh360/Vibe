@@ -76,13 +76,22 @@ definitions:
     type: object
   api.SignupRequest:
     properties:
+      company_name:
+        type: string
       email:
+        type: string
+      first_name:
+        type: string
+      last_name:
         type: string
       password:
         minLength: 8
         type: string
     required:
+    - company_name
     - email
+    - first_name
+    - last_name
     - password
     type: object
   utils.ReportItem:

@@ -11,8 +11,11 @@ import (
 )
 
 type SignupRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	FirstName   string `json:"first_name" binding:"required"`
+	LastName    string `json:"last_name" binding:"required"`
+	CompanyName string `json:"company_name" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required,min=8"`
 }
 
 type LoginRequest struct {
@@ -43,7 +46,12 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	user := models.User{Email: req.Email}
+	user := models.User{
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		CompanyName: req.CompanyName,
+		Email:       req.Email,
+	}
 	if err := user.SetPassword(req.Password); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
@@ -129,14 +137,17 @@ func UserAbout(c *gin.Context) {
 		}
 	}
 
-	if err := database.Select("id", "created_at", "email").First(&user, uint(idFloat)).Error; err != nil {
+	if err := database.Select("id", "created_at", "email", "first_name", "last_name", "company_name").First(&user, uint(idFloat)).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":         user.ID,
-		"email":      user.Email,
-		"created_at": user.CreatedAt,
+		"id":           user.ID,
+		"first_name":   user.FirstName,
+		"last_name":    user.LastName,
+		"company_name": user.CompanyName,
+		"email":        user.Email,
+		"created_at":   user.CreatedAt,
 	})
 }
