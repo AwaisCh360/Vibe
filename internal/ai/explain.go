@@ -29,8 +29,8 @@ Here is the finding:
 	)
 
 	return provider.Complete(ctx, prompt, CompletionOpts{
-		MaxTokens:   1024,
-		Temperature: 0.3,
+		MaxTokens:    1024,
+		Temperature:  0.3,
 		SystemPrompt: "You are Armur, a personal security agent. Explain vulnerabilities clearly and concisely for developers.",
 	})
 }
@@ -57,8 +57,8 @@ Generate ONLY the diff patch, nothing else.`,
 	)
 
 	return provider.Complete(ctx, prompt, CompletionOpts{
-		MaxTokens:   2048,
-		Temperature: 0.2,
+		MaxTokens:    2048,
+		Temperature:  0.2,
 		SystemPrompt: "You are Armur, a personal security agent. Generate minimal, safe code patches.",
 	})
 }

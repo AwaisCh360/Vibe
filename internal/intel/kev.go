@@ -13,14 +13,14 @@ const kevURL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_v
 
 // KEVEntry represents an entry in the CISA Known Exploited Vulnerabilities catalog.
 type KEVEntry struct {
-	CVEID            string `json:"cveID"`
-	VendorProject    string `json:"vendorProject"`
-	Product          string `json:"product"`
+	CVEID             string `json:"cveID"`
+	VendorProject     string `json:"vendorProject"`
+	Product           string `json:"product"`
 	VulnerabilityName string `json:"vulnerabilityName"`
-	DateAdded        string `json:"dateAdded"`
-	ShortDescription string `json:"shortDescription"`
-	DueDate          string `json:"dueDate"`
-	RansomwareUse    string `json:"knownRansomwareCampaignUse"`
+	DateAdded         string `json:"dateAdded"`
+	ShortDescription  string `json:"shortDescription"`
+	DueDate           string `json:"dueDate"`
+	RansomwareUse     string `json:"knownRansomwareCampaignUse"`
 }
 
 var (

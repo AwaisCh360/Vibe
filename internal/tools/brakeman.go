@@ -36,12 +36,12 @@ func categorizeBrakemanResults(raw, directory string) map[string][]interface{} {
 
 	var report struct {
 		Warnings []struct {
-			WarningType string `json:"warning_type"`
-			File        string `json:"file"`
-			Line        int    `json:"line"`
-			Message     string `json:"message"`
-			Confidence  string `json:"confidence"`
-			Code        string `json:"code"`
+			WarningType string  `json:"warning_type"`
+			File        string  `json:"file"`
+			Line        int     `json:"line"`
+			Message     string  `json:"message"`
+			Confidence  string  `json:"confidence"`
+			Code        string  `json:"code"`
 			CVSS        float64 `json:"cvss_score"`
 		} `json:"warnings"`
 	}

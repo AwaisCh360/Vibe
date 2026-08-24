@@ -19,15 +19,15 @@ func DetectMonorepoServices(rootPath string) []Service {
 	var services []Service
 
 	manifestTypes := map[string]string{
-		"go.mod":         "go",
-		"package.json":   "js",
-		"pyproject.toml": "py",
+		"go.mod":           "go",
+		"package.json":     "js",
+		"pyproject.toml":   "py",
 		"requirements.txt": "py",
-		"Cargo.toml":     "rust",
-		"pom.xml":        "java",
-		"build.gradle":   "java",
-		"Gemfile":        "ruby",
-		"composer.json":  "php",
+		"Cargo.toml":       "rust",
+		"pom.xml":          "java",
+		"build.gradle":     "java",
+		"Gemfile":          "ruby",
+		"composer.json":    "php",
 	}
 
 	filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {

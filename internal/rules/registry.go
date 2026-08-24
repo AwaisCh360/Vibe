@@ -27,8 +27,8 @@ type RulePack struct {
 
 // Registry holds the index of available rule packs.
 type Registry struct {
-	Packs    []RulePack `json:"packs"`
-	FetchedAt time.Time `json:"fetched_at"`
+	Packs     []RulePack `json:"packs"`
+	FetchedAt time.Time  `json:"fetched_at"`
 }
 
 // FetchRegistry downloads the latest rule pack index.

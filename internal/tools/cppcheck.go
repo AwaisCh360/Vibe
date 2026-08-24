@@ -62,9 +62,9 @@ func categorizeCppcheckResults(raw, directory string) map[string][]interface{} {
 	}
 
 	severityMap := map[string]string{
-		"error":   "HIGH",
-		"warning": "MEDIUM",
-		"style":   "LOW",
+		"error":       "HIGH",
+		"warning":     "MEDIUM",
+		"style":       "LOW",
 		"performance": "LOW",
 		"portability": "LOW",
 		"information": "INFO",

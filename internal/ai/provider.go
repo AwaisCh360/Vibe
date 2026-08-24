@@ -32,10 +32,10 @@ func DefaultOpts() CompletionOpts {
 
 // ProviderConfig stores AI provider configuration.
 type ProviderConfig struct {
-	Provider     string `json:"provider" yaml:"provider"`           // claude | ollama | auto | none
-	ClaudeModel  string `json:"claude_model" yaml:"claude_model"`   // default: claude-sonnet-4-6
-	OllamaModel  string `json:"ollama_model" yaml:"ollama_model"`   // default: llama3.1:8b
-	OllamaURL    string `json:"ollama_url" yaml:"ollama_url"`       // default: http://localhost:11434
+	Provider    string `json:"provider" yaml:"provider"`         // claude | ollama | auto | none
+	ClaudeModel string `json:"claude_model" yaml:"claude_model"` // default: claude-sonnet-4-6
+	OllamaModel string `json:"ollama_model" yaml:"ollama_model"` // default: llama3.1:8b
+	OllamaURL   string `json:"ollama_url" yaml:"ollama_url"`     // default: http://localhost:11434
 }
 
 // DefaultProviderConfig returns sensible defaults.

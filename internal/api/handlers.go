@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/hibiken/asynq"
 	"armur-codescanner/internal/redis"
+	"github.com/hibiken/asynq"
 
 	"armur-codescanner/internal/middleware"
 	"armur-codescanner/internal/tasks"
@@ -205,14 +205,14 @@ func TaskStatus(c *gin.Context) {
 	if err != nil {
 		inspector := asynq.NewInspector(redis.RedisClientOptions())
 		defer inspector.Close()
-		
+
 		info, inspectErr := inspector.GetTaskInfo("default", taskID)
 		if inspectErr == nil && info != nil {
 			if info.State == asynq.TaskStateArchived || (info.State == asynq.TaskStateRetry && info.Retried >= info.MaxRetry) {
 				c.JSON(http.StatusOK, gin.H{
-					"status": "failed",
+					"status":  "failed",
 					"task_id": taskID,
-					"error": info.LastErr,
+					"error":   info.LastErr,
 				})
 				return
 			}

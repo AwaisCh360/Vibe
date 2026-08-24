@@ -12,12 +12,12 @@ import (
 
 // DepUpdateResult holds the result of a dependency update check.
 type DepUpdateResult struct {
-	Package        string `json:"package"`
-	Current        string `json:"current_version"`
-	Latest         string `json:"latest_version"`
-	UpdateType     string `json:"update_type"` // major, minor, patch
-	Ecosystem      string `json:"ecosystem"`
-	HasVulnerability bool `json:"has_vulnerability"`
+	Package          string `json:"package"`
+	Current          string `json:"current_version"`
+	Latest           string `json:"latest_version"`
+	UpdateType       string `json:"update_type"` // major, minor, patch
+	Ecosystem        string `json:"ecosystem"`
+	HasVulnerability bool   `json:"has_vulnerability"`
 }
 
 // CheckOutdatedDeps checks for outdated dependencies across ecosystems.
@@ -117,9 +117,9 @@ func checkPipOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
 	}
 
 	var outdated []struct {
-		Name           string `json:"name"`
-		Version        string `json:"version"`
-		LatestVersion  string `json:"latest_version"`
+		Name          string `json:"name"`
+		Version       string `json:"version"`
+		LatestVersion string `json:"latest_version"`
 	}
 	if err := json.Unmarshal(output, &outdated); err != nil {
 		return nil

@@ -43,7 +43,7 @@ func categorizePMDResults(raw, directory string) map[string][]interface{} {
 
 	var report struct {
 		Files []struct {
-			Filename  string `json:"filename"`
+			Filename   string `json:"filename"`
 			Violations []struct {
 				BeginLine   int    `json:"beginline"`
 				EndLine     int    `json:"endline"`

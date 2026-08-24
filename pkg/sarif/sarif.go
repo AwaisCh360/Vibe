@@ -32,10 +32,10 @@ type Tool struct {
 
 // Driver describes the scanning tool.
 type Driver struct {
-	Name            string `json:"name"`
-	Version         string `json:"version"`
-	InformationURI  string `json:"informationUri"`
-	Rules           []Rule `json:"rules"`
+	Name           string `json:"name"`
+	Version        string `json:"version"`
+	InformationURI string `json:"informationUri"`
+	Rules          []Rule `json:"rules"`
 }
 
 // Rule describes a single analysis rule.

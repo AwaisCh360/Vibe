@@ -33,10 +33,10 @@ type BatchScanRequest struct {
 
 // BatchTarget is a single target in a batch scan.
 type BatchTarget struct {
-	RepoURL  string `json:"repo_url,omitempty"`
+	RepoURL   string `json:"repo_url,omitempty"`
 	LocalPath string `json:"local_path,omitempty"`
-	Language string `json:"language,omitempty"`
-	Mode     string `json:"mode,omitempty"` // simple | advanced
+	Language  string `json:"language,omitempty"`
+	Mode      string `json:"mode,omitempty"` // simple | advanced
 }
 
 // BatchScanResponse is returned when a batch scan is submitted.

@@ -49,7 +49,7 @@ func RunPassiveChecks(baseURL string) (*DASTResult, error) {
 		"X-Frame-Options":           "Missing X-Frame-Options — risk of clickjacking",
 		"Content-Security-Policy":   "Missing CSP header — risk of XSS attacks",
 		"Referrer-Policy":           "Missing Referrer-Policy — sensitive URLs may leak via Referer header",
-		"X-XSS-Protection":         "Missing X-XSS-Protection header",
+		"X-XSS-Protection":          "Missing X-XSS-Protection header",
 	}
 
 	for header, message := range headerChecks {

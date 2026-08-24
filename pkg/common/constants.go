@@ -42,12 +42,12 @@ var LanguageFileExtensions = map[string][]string{
 		".xml",    // Maven pom.xml
 	},
 	"ruby": {
-		".rb",   // Ruby source files
-		".rake", // Rake task files
+		".rb",      // Ruby source files
+		".rake",    // Rake task files
 		".gemspec", // Gem spec files
 	},
 	"php": {
-		".php",  // PHP source files
+		".php",   // PHP source files
 		".phtml", // PHP HTML templates
 	},
 	"c": {
@@ -59,11 +59,11 @@ var LanguageFileExtensions = map[string][]string{
 		".hpp", // C++ header files
 	},
 	"iac": {
-		".tf",      // Terraform files
-		".tfvars",  // Terraform variable files
-		".yaml",    // YAML (k8s, Ansible, etc.)
-		".yml",     // YAML (k8s, Ansible, etc.)
-		".json",    // JSON config files
+		".tf",     // Terraform files
+		".tfvars", // Terraform variable files
+		".yaml",   // YAML (k8s, Ansible, etc.)
+		".yml",    // YAML (k8s, Ansible, etc.)
+		".json",   // JSON config files
 	},
 	"sol": {
 		".sol", // Solidity smart contract files

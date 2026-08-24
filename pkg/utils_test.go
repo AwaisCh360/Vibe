@@ -109,7 +109,7 @@ func TestLoadCWEData(t *testing.T) {
 func TestGetPracticesFromJSON_KnownCWE(t *testing.T) {
 	data := []CWEData{
 		{
-			CWE: "CWE-89",
+			CWE:                 "CWE-89",
 			GoodPracticeExample: map[string]string{"go": "use parameterized queries"},
 			BadPracticeExample:  map[string]string{"go": "string concatenation"},
 		},

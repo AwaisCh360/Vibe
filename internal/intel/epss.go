@@ -62,9 +62,9 @@ func queryEPSSBatch(cveIDs []string) (map[string]EPSSScore, error) {
 
 	var response struct {
 		Data []struct {
-			CVE        string  `json:"cve"`
-			EPSS       string  `json:"epss"`
-			Percentile string  `json:"percentile"`
+			CVE        string `json:"cve"`
+			EPSS       string `json:"epss"`
+			Percentile string `json:"percentile"`
 		} `json:"data"`
 	}
 

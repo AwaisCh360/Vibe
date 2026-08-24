@@ -21,8 +21,8 @@ const (
 type Finding struct {
 	ID          string   `json:"id"`
 	Tool        string   `json:"tool"`
-	Source      string   `json:"source,omitempty"`       // sast | dast | sca | secrets | iac | exploit | attack_path
-	Category    string   `json:"category"`               // security_issues | antipatterns_bugs | complex_functions | etc.
+	Source      string   `json:"source,omitempty"` // sast | dast | sca | secrets | iac | exploit | attack_path
+	Category    string   `json:"category"`         // security_issues | antipatterns_bugs | complex_functions | etc.
 	File        string   `json:"file"`
 	Line        int      `json:"line"`
 	EndLine     int      `json:"end_line,omitempty"`
@@ -31,7 +31,7 @@ type Finding struct {
 	CWE         string   `json:"cwe,omitempty"`
 	OWASP       string   `json:"owasp,omitempty"`
 	Severity    Severity `json:"severity"`
-	Confidence  string   `json:"confidence,omitempty"`   // high | medium | low
+	Confidence  string   `json:"confidence,omitempty"` // high | medium | low
 	Message     string   `json:"message"`
 	Snippet     string   `json:"snippet,omitempty"`
 	Remediation string   `json:"remediation,omitempty"`
@@ -53,12 +53,12 @@ func (f *Finding) ComputeID() {
 
 // ScanResult represents the complete output of a scan.
 type ScanResult struct {
-	TaskID    string        `json:"task_id"`
-	Status    string        `json:"status"` // success | failed | cancelled
-	Findings  []Finding     `json:"findings"`
-	Errors    []ScanError   `json:"errors,omitempty"`
-	Meta      ScanMeta      `json:"meta"`
-	DedupMeta *DedupMeta    `json:"dedup,omitempty"`
+	TaskID    string      `json:"task_id"`
+	Status    string      `json:"status"` // success | failed | cancelled
+	Findings  []Finding   `json:"findings"`
+	Errors    []ScanError `json:"errors,omitempty"`
+	Meta      ScanMeta    `json:"meta"`
+	DedupMeta *DedupMeta  `json:"dedup,omitempty"`
 }
 
 // ScanError captures a tool-level failure that occurred during a scan.

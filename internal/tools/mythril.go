@@ -65,7 +65,7 @@ func categorizeMythrilResults(raw, directory, filename string) map[string][]inte
 	categorized := utils.InitCategorizedResults()
 
 	var report struct {
-		Success bool `json:"success"`
+		Success bool   `json:"success"`
 		Error   string `json:"error"`
 		Issues  []struct {
 			Title       string `json:"title"`

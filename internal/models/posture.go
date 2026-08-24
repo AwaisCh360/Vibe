@@ -4,8 +4,8 @@ import "math"
 
 // PostureScore represents a project's security posture.
 type PostureScore struct {
-	Score    int    `json:"score"`    // 0-100
-	Grade    string `json:"grade"`    // A, B, C, D, F
+	Score    int    `json:"score"` // 0-100
+	Grade    string `json:"grade"` // A, B, C, D, F
 	Critical int    `json:"critical"`
 	High     int    `json:"high"`
 	Medium   int    `json:"medium"`

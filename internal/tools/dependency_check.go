@@ -56,12 +56,14 @@ func categorizeDependencyCheckResults(raw, directory string) map[string][]interf
 
 	var report struct {
 		Dependencies []struct {
-			FileName         string `json:"fileName"`
-			Vulnerabilities  []struct {
-				Name        string  `json:"name"`
-				Severity    string  `json:"severity"`
-				Description string  `json:"description"`
-				CVSSv3      *struct{ BaseScore float64 `json:"baseScore"` } `json:"cvssv3"`
+			FileName        string `json:"fileName"`
+			Vulnerabilities []struct {
+				Name        string `json:"name"`
+				Severity    string `json:"severity"`
+				Description string `json:"description"`
+				CVSSv3      *struct {
+					BaseScore float64 `json:"baseScore"`
+				} `json:"cvssv3"`
 			} `json:"vulnerabilities"`
 		} `json:"dependencies"`
 	}

@@ -40,13 +40,13 @@ func categorizeSlitherResults(raw, directory string) map[string][]interface{} {
 		Success bool `json:"success"`
 		Results struct {
 			Detectors []struct {
-				Check       string  `json:"check"`
-				Impact      string  `json:"impact"`
-				Confidence  string  `json:"confidence"`
-				Description string  `json:"description"`
+				Check       string `json:"check"`
+				Impact      string `json:"impact"`
+				Confidence  string `json:"confidence"`
+				Description string `json:"description"`
 				Elements    []struct {
-					Name string `json:"name"`
-					Type string `json:"type"`
+					Name          string `json:"name"`
+					Type          string `json:"type"`
 					SourceMapping *struct {
 						Filename string `json:"filename"`
 						Lines    []int  `json:"lines"`

@@ -44,7 +44,7 @@ func categorizeKubeScoreResults(raw, directory string) map[string][]interface{} 
 			Check struct {
 				Name string `json:"name"`
 			} `json:"check"`
-			Grade    int    `json:"grade"`
+			Grade    int `json:"grade"`
 			Comments []struct {
 				Path        string `json:"path"`
 				Summary     string `json:"summary"`

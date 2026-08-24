@@ -39,9 +39,9 @@ func parseGrypeOutput(output []byte) (map[string]interface{}, error) {
 	var result struct {
 		Matches []struct {
 			Vulnerability struct {
-				ID          string   `json:"id"`
-				Severity    string   `json:"severity"`
-				Description string   `json:"description"`
+				ID          string `json:"id"`
+				Severity    string `json:"severity"`
+				Description string `json:"description"`
 				Fix         struct {
 					Versions []string `json:"versions"`
 				} `json:"fix"`
@@ -89,12 +89,12 @@ func parseTrivyImageOutput(output []byte) (map[string]interface{}, error) {
 		Results []struct {
 			Target          string `json:"Target"`
 			Vulnerabilities []struct {
-				VulnerabilityID string `json:"VulnerabilityID"`
-				PkgName         string `json:"PkgName"`
+				VulnerabilityID  string `json:"VulnerabilityID"`
+				PkgName          string `json:"PkgName"`
 				InstalledVersion string `json:"InstalledVersion"`
-				FixedVersion    string `json:"FixedVersion"`
-				Severity        string `json:"Severity"`
-				Title           string `json:"Title"`
+				FixedVersion     string `json:"FixedVersion"`
+				Severity         string `json:"Severity"`
+				Title            string `json:"Title"`
 			} `json:"Vulnerabilities"`
 		} `json:"Results"`
 	}

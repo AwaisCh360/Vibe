@@ -36,9 +36,9 @@ func categorizeKubeLinterResults(raw, directory string) map[string][]interface{}
 
 	var report struct {
 		Reports []struct {
-			Check    string `json:"check"`
+			Check       string `json:"check"`
 			Remediation string `json:"remediation"`
-			Object   struct {
+			Object      struct {
 				K8sObject struct {
 					GroupVersionKind struct {
 						Kind string `json:"Kind"`

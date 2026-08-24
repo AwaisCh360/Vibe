@@ -8,15 +8,15 @@ import (
 
 // ScanEvent represents a real-time event during scan execution.
 type ScanEvent struct {
-	Event     string      `json:"event"`     // tool_started, tool_progress, tool_completed, tool_failed, tool_skipped, scan_completed
-	Tool      string      `json:"tool,omitempty"`
-	Percent   int         `json:"pct,omitempty"`
-	Findings  int         `json:"findings,omitempty"`
-	Duration  int64       `json:"duration_ms,omitempty"`
-	Error     string      `json:"error,omitempty"`
-	Reason    string      `json:"reason,omitempty"`
-	Total     int         `json:"total_findings,omitempty"`
-	Timestamp int64       `json:"ts"`
+	Event     string `json:"event"` // tool_started, tool_progress, tool_completed, tool_failed, tool_skipped, scan_completed
+	Tool      string `json:"tool,omitempty"`
+	Percent   int    `json:"pct,omitempty"`
+	Findings  int    `json:"findings,omitempty"`
+	Duration  int64  `json:"duration_ms,omitempty"`
+	Error     string `json:"error,omitempty"`
+	Reason    string `json:"reason,omitempty"`
+	Total     int    `json:"total_findings,omitempty"`
+	Timestamp int64  `json:"ts"`
 }
 
 // EventRegistry stores per-task event channels for SSE streaming.

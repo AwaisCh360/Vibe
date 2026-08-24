@@ -17,11 +17,11 @@ const (
 
 // AgentConfig controls the security agent's behavior.
 type AgentConfig struct {
-	Mode          ScanMode `yaml:"mode" json:"mode"`
-	AutoDAST      bool     `yaml:"auto_dast" json:"auto_dast"`
-	AutoExploit   bool     `yaml:"auto_exploit" json:"auto_exploit"`
-	Watch         bool     `yaml:"watch" json:"watch"`
-	PRReview      bool     `yaml:"pr_review" json:"pr_review"`
+	Mode        ScanMode `yaml:"mode" json:"mode"`
+	AutoDAST    bool     `yaml:"auto_dast" json:"auto_dast"`
+	AutoExploit bool     `yaml:"auto_exploit" json:"auto_exploit"`
+	Watch       bool     `yaml:"watch" json:"watch"`
+	PRReview    bool     `yaml:"pr_review" json:"pr_review"`
 }
 
 // DefaultConfig returns sensible defaults for the agent.

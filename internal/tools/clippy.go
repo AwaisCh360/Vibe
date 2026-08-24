@@ -37,11 +37,13 @@ func RunClippy(ctx context.Context, directory string) (map[string]interface{}, e
 type clippyMessage struct {
 	Reason  string `json:"reason"`
 	Message *struct {
-		Message  string `json:"message"`
-		Level    string `json:"level"`
-		Code     *struct{ Code string `json:"code"` } `json:"code"`
-		Spans    []struct {
-			FileName string `json:"file_name"`
+		Message string `json:"message"`
+		Level   string `json:"level"`
+		Code    *struct {
+			Code string `json:"code"`
+		} `json:"code"`
+		Spans []struct {
+			FileName  string `json:"file_name"`
 			LineStart int    `json:"line_start"`
 			LineEnd   int    `json:"line_end"`
 		} `json:"spans"`

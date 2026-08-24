@@ -1,10 +1,10 @@
 package internal
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"text/template"
-	"bytes"
 )
 
 // SecurityTest represents a generated security test.
@@ -132,7 +132,7 @@ func generateCmdInjectionTest(language, file, message string) *SecurityTest {
 		Language:    language,
 		TestName:    "TestCommandInjectionPrevention",
 		Description: fmt.Sprintf("Regression test for command injection in %s", file),
-		TestCode: fmt.Sprintf("// TODO: Test that command injection payloads (;id, |whoami, $(cat /etc/passwd)) are rejected in %s", file),
+		TestCode:    fmt.Sprintf("// TODO: Test that command injection payloads (;id, |whoami, $(cat /etc/passwd)) are rejected in %s", file),
 	}
 }
 
@@ -141,7 +141,7 @@ func generatePathTraversalTest(language, file, message string) *SecurityTest {
 		Language:    language,
 		TestName:    "TestPathTraversalPrevention",
 		Description: fmt.Sprintf("Regression test for path traversal in %s", file),
-		TestCode: fmt.Sprintf("// TODO: Test that path traversal payloads (../../etc/passwd) are rejected in %s", file),
+		TestCode:    fmt.Sprintf("// TODO: Test that path traversal payloads (../../etc/passwd) are rejected in %s", file),
 	}
 }
 

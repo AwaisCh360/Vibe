@@ -2,6 +2,8 @@ package main
 
 import (
 	"armur-codescanner/internal/api"
+	"armur-codescanner/internal/db"
+	"armur-codescanner/internal/models"
 	"armur-codescanner/internal/redis"
 	"armur-codescanner/internal/worker"
 	"log"
@@ -34,6 +36,16 @@ func main() {
 	}
 
 	router := gin.Default()
+
+	// Initialize PostgreSQL DB and Auto Migrate User Model
+	database, err := db.InitDB()
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+	if err := database.AutoMigrate(&models.User{}); err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
 	go func() {
 		if err := startAsynqWorker(); err != nil {
 			log.Fatalf("Failed to start Asynq worker: %v", err)
