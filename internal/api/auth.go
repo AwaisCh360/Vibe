@@ -62,9 +62,22 @@ func Signup(c *gin.Context) {
 		return
 	}
 
+	token, err := middleware.GenerateJWT(user.ID, user.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User registered successfully",
-		"user_id": user.ID,
+		"token":   token,
+		"user": map[string]interface{}{
+			"id":           user.ID,
+			"first_name":   user.FirstName,
+			"last_name":    user.LastName,
+			"company_name": user.CompanyName,
+			"email":        user.Email,
+		},
 	})
 }
 
@@ -105,6 +118,13 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
 		"token":   token,
+		"user": map[string]interface{}{
+			"id":           user.ID,
+			"first_name":   user.FirstName,
+			"last_name":    user.LastName,
+			"company_name": user.CompanyName,
+			"email":        user.Email,
+		},
 	})
 }
 

@@ -35,11 +35,27 @@ func DashboardStats(c *gin.Context) {
 	database.Model(&models.ScanHistory{}).Where("user_id = ? AND status = ?", uint(idFloat), "failed").Count(&failedScans)
 	database.Model(&models.ScanHistory{}).Where("user_id = ? AND status = ?", uint(idFloat), "success").Count(&successScans)
 
+	type BugAggregates struct {
+		TotalCritical int64
+		TotalHigh     int64
+		TotalMedium   int64
+		TotalLow      int64
+	}
+	var agg BugAggregates
+	database.Model(&models.ScanHistory{}).
+		Where("user_id = ?", uint(idFloat)).
+		Select("sum(critical_bugs) as total_critical, sum(high_bugs) as total_high, sum(medium_bugs) as total_medium, sum(low_bugs) as total_low").
+		Scan(&agg)
+
 	c.JSON(http.StatusOK, gin.H{
-		"total_scans":   totalScans,
-		"pending_scans": pendingScans,
-		"failed_scans":  failedScans,
-		"success_scans": successScans,
+		"total_scans":    totalScans,
+		"pending_scans":  pendingScans,
+		"failed_scans":   failedScans,
+		"success_scans":  successScans,
+		"total_critical": agg.TotalCritical,
+		"total_high":     agg.TotalHigh,
+		"total_medium":   agg.TotalMedium,
+		"total_low":      agg.TotalLow,
 	})
 }
 
