@@ -43,6 +43,7 @@ func (h *ScanTaskHandler) ProcessTask(ctx context.Context, task *asynq.Task) err
 	}
 
 	if err := tasks.SaveTaskResult(taskID, result); err != nil {
+		logger.Error().Str("task_id", taskID).Err(err).Msg("failed to store scan result")
 		return fmt.Errorf("failed to store scan result: %w", err)
 	}
 
@@ -61,5 +62,6 @@ func (h *ScanTaskHandler) ProcessTask(ctx context.Context, task *asynq.Task) err
 		}()
 	}
 
+	logger.Info().Str("task_id", taskID).Msg("task processed successfully")
 	return nil
 }
