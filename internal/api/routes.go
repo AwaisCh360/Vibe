@@ -29,6 +29,12 @@ func RegisterRoutes(r *gin.Engine) {
 	{
 		// User endpoints
 		api.GET("/user/about", UserAbout)
+		api.PUT("/user/profile", UpdateProfile)
+		api.PUT("/user/password", UpdatePassword)
+
+		// Dashboard endpoints
+		api.GET("/dashboard/stats", DashboardStats)
+		api.GET("/dashboard/history", ScanHistoryList)
 
 		// Scan routes
 		api.POST("/scan/repo", ScanHandler)

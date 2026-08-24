@@ -1,15 +1,89 @@
 basePath: /
 definitions:
-  api.BatchScanRequest:
+  armur-codescanner_internal_models.ScanHistory:
+    properties:
+      createdAt:
+        type: string
+      critical_bugs:
+        type: integer
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      high_bugs:
+        type: integer
+      id:
+        type: integer
+      low_bugs:
+        type: integer
+      medium_bugs:
+        type: integer
+      repository_url:
+        type: string
+      status:
+        description: pending, running, success, failed
+        type: string
+      task_id:
+        type: string
+      updatedAt:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  armur-codescanner_pkg.ReportItem:
+    properties:
+      column:
+        type: integer
+      confidence:
+        type: string
+      file:
+        type: string
+      line:
+        type: integer
+      message:
+        type: string
+      owasp:
+        type: string
+      severity:
+        type: string
+      suggested_remediation:
+        type: string
+    type: object
+  armur-codescanner_pkg.SANSReportItem:
+    properties:
+      column:
+        type: integer
+      confidence:
+        type: string
+      cwe:
+        type: string
+      file:
+        type: string
+      line:
+        type: integer
+      message:
+        type: string
+      severity:
+        type: string
+      suggested_remediation:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  internal_api.BatchScanRequest:
     properties:
       targets:
         items:
-          $ref: '#/definitions/api.BatchTarget'
+          $ref: '#/definitions/internal_api.BatchTarget'
         type: array
     required:
     - targets
     type: object
-  api.BatchScanResponse:
+  internal_api.BatchScanResponse:
     properties:
       batch_id:
         type: string
@@ -20,7 +94,7 @@ definitions:
           type: string
         type: array
     type: object
-  api.BatchTarget:
+  internal_api.BatchTarget:
     properties:
       language:
         type: string
@@ -32,7 +106,7 @@ definitions:
       repo_url:
         type: string
     type: object
-  api.LocalScanRequest:
+  internal_api.LocalScanRequest:
     properties:
       changed_files_only:
         example: false
@@ -49,7 +123,7 @@ definitions:
     required:
     - local_path
     type: object
-  api.LoginRequest:
+  internal_api.LoginRequest:
     properties:
       email:
         type: string
@@ -59,7 +133,7 @@ definitions:
     - email
     - password
     type: object
-  api.ScanRequest:
+  internal_api.ScanRequest:
     properties:
       language:
         example: go
@@ -74,7 +148,7 @@ definitions:
         example: https://hooks.example.com/armur
         type: string
     type: object
-  api.SignupRequest:
+  internal_api.SignupRequest:
     properties:
       company_name:
         type: string
@@ -94,43 +168,29 @@ definitions:
     - last_name
     - password
     type: object
-  utils.ReportItem:
+  internal_api.UpdatePasswordRequest:
     properties:
-      column:
-        type: integer
-      confidence:
+      new_password:
+        minLength: 8
         type: string
-      file:
+      old_password:
         type: string
-      line:
-        type: integer
-      message:
-        type: string
-      owasp:
-        type: string
-      severity:
-        type: string
-      suggested_remediation:
-        type: string
+    required:
+    - new_password
+    - old_password
     type: object
-  utils.SANSReportItem:
+  internal_api.UpdateProfileRequest:
     properties:
-      column:
-        type: integer
-      confidence:
+      company_name:
         type: string
-      cwe:
+      first_name:
         type: string
-      file:
+      last_name:
         type: string
-      line:
-        type: integer
-      message:
-        type: string
-      severity:
-        type: string
-      suggested_remediation:
-        type: string
+    required:
+    - company_name
+    - first_name
+    - last_name
     type: object
 info:
   contact:
@@ -156,7 +216,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.ScanRequest'
+          $ref: '#/definitions/internal_api.ScanRequest'
       produces:
       - application/json
       responses:
@@ -192,7 +252,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.LoginRequest'
+          $ref: '#/definitions/internal_api.LoginRequest'
       produces:
       - application/json
       responses:
@@ -215,7 +275,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.SignupRequest'
+          $ref: '#/definitions/internal_api.SignupRequest'
       produces:
       - application/json
       responses:
@@ -227,6 +287,39 @@ paths:
       summary: User Signup
       tags:
       - Authentication
+  /api/v1/dashboard/history:
+    get:
+      description: Get a list of past scans run by the logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/armur-codescanner_internal_models.ScanHistory'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Scan History
+      tags:
+      - Dashboard
+  /api/v1/dashboard/stats:
+    get:
+      description: Get overall statistics of scans for the logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Dashboard Stats
+      tags:
+      - Dashboard
   /api/v1/progress/{task_id}:
     get:
       description: Streams scan progress via Server-Sent Events (SSE)
@@ -262,7 +355,7 @@ paths:
           description: Successfully generated OWASP report
           schema:
             items:
-              $ref: '#/definitions/utils.ReportItem'
+              $ref: '#/definitions/armur-codescanner_pkg.ReportItem'
             type: array
         "404":
           description: Task result not found
@@ -295,7 +388,7 @@ paths:
           description: Successfully generated SANS report
           schema:
             items:
-              $ref: '#/definitions/utils.SANSReportItem'
+              $ref: '#/definitions/armur-codescanner_pkg.SANSReportItem'
             type: array
         "404":
           description: Task result not found
@@ -344,14 +437,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.BatchScanRequest'
+          $ref: '#/definitions/internal_api.BatchScanRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.BatchScanResponse'
+            $ref: '#/definitions/internal_api.BatchScanResponse'
       summary: Batch Scan
       tags:
       - Scan
@@ -401,7 +494,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.LocalScanRequest'
+          $ref: '#/definitions/internal_api.LocalScanRequest'
       produces:
       - application/json
       responses:
@@ -437,7 +530,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/api.ScanRequest'
+          $ref: '#/definitions/internal_api.ScanRequest'
       produces:
       - application/json
       responses:
@@ -506,6 +599,56 @@ paths:
       summary: Get Current User Info
       tags:
       - Authentication
+  /api/v1/user/password:
+    put:
+      consumes:
+      - application/json
+      description: securely updates the user's password
+      parameters:
+      - description: Password Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.UpdatePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update User Password
+      tags:
+      - User Profile
+  /api/v1/user/profile:
+    put:
+      consumes:
+      - application/json
+      description: Updates the user's first name, last name, and company name
+      parameters:
+      - description: Profile Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update User Profile
+      tags:
+      - User Profile
   /health:
     get:
       description: Returns the health status of the API

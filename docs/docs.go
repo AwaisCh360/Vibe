@@ -44,7 +44,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.ScanRequest"
+                            "$ref": "#/definitions/internal_api.ScanRequest"
                         }
                     }
                 ],
@@ -99,7 +99,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.LoginRequest"
+                            "$ref": "#/definitions/internal_api.LoginRequest"
                         }
                     }
                 ],
@@ -134,13 +134,67 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.SignupRequest"
+                            "$ref": "#/definitions/internal_api.SignupRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a list of past scans run by the logged-in user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Scan History",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/armur-codescanner_internal_models.ScanHistory"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/stats": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get overall statistics of scans for the logged-in user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Dashboard Stats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -203,7 +257,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/utils.ReportItem"
+                                "$ref": "#/definitions/armur-codescanner_pkg.ReportItem"
                             }
                         }
                     },
@@ -253,7 +307,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/utils.SANSReportItem"
+                                "$ref": "#/definitions/armur-codescanner_pkg.SANSReportItem"
                             }
                         }
                     },
@@ -298,7 +352,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.BatchScanRequest"
+                            "$ref": "#/definitions/internal_api.BatchScanRequest"
                         }
                     }
                 ],
@@ -306,7 +360,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.BatchScanResponse"
+                            "$ref": "#/definitions/internal_api.BatchScanResponse"
                         }
                     }
                 }
@@ -385,7 +439,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.LocalScanRequest"
+                            "$ref": "#/definitions/internal_api.LocalScanRequest"
                         }
                     }
                 ],
@@ -440,7 +494,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.ScanRequest"
+                            "$ref": "#/definitions/internal_api.ScanRequest"
                         }
                     }
                 ],
@@ -573,6 +627,86 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/user/password": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "securely updates the user's password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Update User Password",
+                "parameters": [
+                    {
+                        "description": "Password Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api.UpdatePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/profile": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates the user's first name, last name, and company name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Update User Profile",
+                "parameters": [
+                    {
+                        "description": "Profile Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api.UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Returns the health status of the API",
@@ -621,144 +755,49 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.BatchScanRequest": {
-            "type": "object",
-            "required": [
-                "targets"
-            ],
-            "properties": {
-                "targets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/api.BatchTarget"
-                    }
-                }
-            }
-        },
-        "api.BatchScanResponse": {
+        "armur-codescanner_internal_models.ScanHistory": {
             "type": "object",
             "properties": {
-                "batch_id": {
+                "createdAt": {
                     "type": "string"
                 },
-                "count": {
+                "critical_bugs": {
                     "type": "integer"
                 },
-                "task_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "api.BatchTarget": {
-            "type": "object",
-            "properties": {
-                "language": {
-                    "type": "string"
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
-                "local_path": {
-                    "type": "string"
+                "high_bugs": {
+                    "type": "integer"
                 },
-                "mode": {
-                    "description": "simple | advanced",
-                    "type": "string"
+                "id": {
+                    "type": "integer"
                 },
-                "repo_url": {
-                    "type": "string"
-                }
-            }
-        },
-        "api.LocalScanRequest": {
-            "type": "object",
-            "required": [
-                "local_path"
-            ],
-            "properties": {
-                "changed_files_only": {
-                    "type": "boolean",
-                    "example": false
+                "low_bugs": {
+                    "type": "integer"
                 },
-                "diff_base_ref": {
-                    "type": "string",
-                    "example": "HEAD~1"
-                },
-                "language": {
-                    "type": "string",
-                    "example": "go"
-                },
-                "local_path": {
-                    "type": "string",
-                    "example": "/armur/repo"
-                }
-            }
-        },
-        "api.LoginRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "api.ScanRequest": {
-            "type": "object",
-            "properties": {
-                "language": {
-                    "type": "string",
-                    "example": "go"
+                "medium_bugs": {
+                    "type": "integer"
                 },
                 "repository_url": {
-                    "type": "string",
-                    "example": "https://github.com/Armur-Ai/Armur-Code-Scanner"
+                    "type": "string"
                 },
-                "webhook_secret": {
-                    "type": "string",
-                    "example": "my-hmac-secret"
+                "status": {
+                    "description": "pending, running, success, failed",
+                    "type": "string"
                 },
-                "webhook_url": {
-                    "type": "string",
-                    "example": "https://hooks.example.com/armur"
+                "task_id": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
-        "api.SignupRequest": {
-            "type": "object",
-            "required": [
-                "company_name",
-                "email",
-                "first_name",
-                "last_name",
-                "password"
-            ],
-            "properties": {
-                "company_name": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 8
-                }
-            }
-        },
-        "utils.ReportItem": {
+        "armur-codescanner_pkg.ReportItem": {
             "type": "object",
             "properties": {
                 "column": {
@@ -787,7 +826,7 @@ const docTemplate = `{
                 }
             }
         },
-        "utils.SANSReportItem": {
+        "armur-codescanner_pkg.SANSReportItem": {
             "type": "object",
             "properties": {
                 "column": {
@@ -812,6 +851,190 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "suggested_remediation": {
+                    "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_api.BatchScanRequest": {
+            "type": "object",
+            "required": [
+                "targets"
+            ],
+            "properties": {
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_api.BatchTarget"
+                    }
+                }
+            }
+        },
+        "internal_api.BatchScanResponse": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "task_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "internal_api.BatchTarget": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string"
+                },
+                "local_path": {
+                    "type": "string"
+                },
+                "mode": {
+                    "description": "simple | advanced",
+                    "type": "string"
+                },
+                "repo_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api.LocalScanRequest": {
+            "type": "object",
+            "required": [
+                "local_path"
+            ],
+            "properties": {
+                "changed_files_only": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "diff_base_ref": {
+                    "type": "string",
+                    "example": "HEAD~1"
+                },
+                "language": {
+                    "type": "string",
+                    "example": "go"
+                },
+                "local_path": {
+                    "type": "string",
+                    "example": "/armur/repo"
+                }
+            }
+        },
+        "internal_api.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api.ScanRequest": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string",
+                    "example": "go"
+                },
+                "repository_url": {
+                    "type": "string",
+                    "example": "https://github.com/Armur-Ai/Armur-Code-Scanner"
+                },
+                "webhook_secret": {
+                    "type": "string",
+                    "example": "my-hmac-secret"
+                },
+                "webhook_url": {
+                    "type": "string",
+                    "example": "https://hooks.example.com/armur"
+                }
+            }
+        },
+        "internal_api.SignupRequest": {
+            "type": "object",
+            "required": [
+                "company_name",
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "company_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                }
+            }
+        },
+        "internal_api.UpdatePasswordRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "minLength": 8
+                },
+                "old_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api.UpdateProfileRequest": {
+            "type": "object",
+            "required": [
+                "company_name",
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "company_name": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
                     "type": "string"
                 }
             }

@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	if err := database.AutoMigrate(&models.User{}); err != nil {
+	if err := database.AutoMigrate(&models.User{}, &models.ScanHistory{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 

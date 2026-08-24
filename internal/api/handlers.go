@@ -4,7 +4,9 @@ import (
 	"armur-codescanner/internal/redis"
 	"github.com/hibiken/asynq"
 
+	"armur-codescanner/internal/db"
 	"armur-codescanner/internal/middleware"
+	"armur-codescanner/internal/models"
 	"armur-codescanner/internal/tasks"
 	utils "armur-codescanner/pkg"
 	"armur-codescanner/pkg/sarif"
@@ -93,6 +95,18 @@ func ScanHandler(c *gin.Context) {
 		return
 	}
 
+	// Record in ScanHistory
+	if userID, exists := c.Get("user_id"); exists {
+		idFloat, _ := userID.(float64)
+		database := db.GetDB()
+		database.Create(&models.ScanHistory{
+			UserID:        uint(idFloat),
+			TaskID:        taskID,
+			RepositoryURL: request.RepositoryURL,
+			Status:        "pending",
+		})
+	}
+
 	// Respond with the Task ID
 	c.JSON(http.StatusOK, gin.H{"task_id": taskID})
 }
@@ -132,6 +146,19 @@ func AdvancedScanResult(c *gin.Context) {
 		return
 	}
 
+	// Record in ScanHistory
+	if userID, exists := c.Get("user_id"); exists {
+		idFloat, _ := userID.(float64)
+		database := db.GetDB()
+		database.Create(&models.ScanHistory{
+			UserID:        uint(idFloat),
+			TaskID:        taskID,
+			RepositoryURL: request.RepositoryURL,
+			Status:        "pending",
+		})
+	}
+
+	// Respond with the Task ID
 	c.JSON(http.StatusOK, gin.H{"task_id": taskID})
 }
 
