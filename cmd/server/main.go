@@ -27,6 +27,12 @@ import (
 // @license.url https://opensource.org/licenses/MIT
 // @BasePath /
 func main() {
+	if os.Getenv("REDIS_ADDR") == "" {
+		if _, err := redis.StartEmbeddedRedis(); err != nil {
+			log.Fatalf("Failed to start embedded redis: %v", err)
+		}
+	}
+
 	router := gin.Default()
 	go func() {
 		if err := startAsynqWorker(); err != nil {
