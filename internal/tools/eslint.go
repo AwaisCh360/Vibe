@@ -144,7 +144,7 @@ func RunESLint(ctx context.Context, directory, configFile string) ([]map[string]
 		defer os.Remove(configDest)
 	}
 
-	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", ".")
+	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", "--ignore-pattern", "node_modules/", ".")
 	cmd.Dir = directory
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
