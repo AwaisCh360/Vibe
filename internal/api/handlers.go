@@ -319,6 +319,12 @@ func TaskSans(c *gin.Context) {
 	c.JSON(http.StatusOK, report)
 }
 
+// @Summary Health Check
+// @Description Returns the health status of the API
+// @Tags System
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /health [get]
 // HealthCheck returns the server health status.
 func HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
@@ -327,6 +333,12 @@ func HealthCheck(c *gin.Context) {
 	})
 }
 
+// @Summary Readiness Check
+// @Description Returns the readiness status of the API
+// @Tags System
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /ready [get]
 // ReadinessCheck returns whether the server is ready to accept requests.
 func ReadinessCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
@@ -334,6 +346,13 @@ func ReadinessCheck(c *gin.Context) {
 	})
 }
 
+// @Summary Cancel Scan
+// @Description Cancels an in-progress scan task
+// @Tags Scan
+// @Produce json
+// @Param task_id path string true "Task ID"
+// @Success 200 {object} map[string]string
+// @Router /api/v1/scan/{task_id} [delete]
 // CancelScan cancels an in-progress scan task.
 func CancelScan(c *gin.Context) {
 	taskID := c.Param("task_id")
@@ -350,6 +369,13 @@ func CancelScan(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "cancelled", "task_id": taskID})
 }
 
+// @Summary Task Progress
+// @Description Streams scan progress via Server-Sent Events (SSE)
+// @Tags Scan
+// @Produce text/event-stream
+// @Param task_id path string true "Task ID"
+// @Success 200 {string} string "SSE Stream"
+// @Router /api/v1/progress/{task_id} [get]
 // TaskProgress streams scan progress via Server-Sent Events (SSE).
 // The client connects and receives real-time updates as tools execute.
 func TaskProgress(c *gin.Context) {
@@ -399,6 +425,14 @@ func TaskProgress(c *gin.Context) {
 	}
 }
 
+// @Summary Batch Scan
+// @Description Enqueues multiple scan tasks at once
+// @Tags Scan
+// @Accept json
+// @Produce json
+// @Param request body BatchScanRequest true "Batch Scan Request"
+// @Success 200 {object} BatchScanResponse
+// @Router /api/v1/scan/batch [post]
 // BatchScan enqueues multiple scan tasks at once.
 func BatchScan(c *gin.Context) {
 	var request BatchScanRequest

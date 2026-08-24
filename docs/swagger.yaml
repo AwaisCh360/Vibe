@@ -1,13 +1,53 @@
 basePath: /
 definitions:
+  api.BatchScanRequest:
+    properties:
+      targets:
+        items:
+          $ref: '#/definitions/api.BatchTarget'
+        type: array
+    required:
+    - targets
+    type: object
+  api.BatchScanResponse:
+    properties:
+      batch_id:
+        type: string
+      count:
+        type: integer
+      task_ids:
+        items:
+          type: string
+        type: array
+    type: object
+  api.BatchTarget:
+    properties:
+      language:
+        type: string
+      local_path:
+        type: string
+      mode:
+        description: simple | advanced
+        type: string
+      repo_url:
+        type: string
+    type: object
   api.LocalScanRequest:
     properties:
+      changed_files_only:
+        example: false
+        type: boolean
+      diff_base_ref:
+        example: HEAD~1
+        type: string
       language:
         example: go
         type: string
       local_path:
-        example: /path/to/local/repo
+        example: /armur/repo
         type: string
+    required:
+    - local_path
     type: object
   api.ScanRequest:
     properties:
@@ -16,6 +56,12 @@ definitions:
         type: string
       repository_url:
         example: https://github.com/Armur-Ai/Armur-Code-Scanner
+        type: string
+      webhook_secret:
+        example: my-hmac-secret
+        type: string
+      webhook_url:
+        example: https://hooks.example.com/armur
         type: string
     type: object
   utils.ReportItem:
@@ -66,7 +112,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
-  title: Armur Code Scanner API
+  title: vibescan API
   version: "1.0"
 paths:
   /api/v1/advanced-scan/repo:
@@ -105,6 +151,25 @@ paths:
       summary: Trigger a code scan on a repository with advanced scans.
       tags:
       - scan
+  /api/v1/progress/{task_id}:
+    get:
+      description: Streams scan progress via Server-Sent Events (SSE)
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE Stream
+          schema:
+            type: string
+      summary: Task Progress
+      tags:
+      - Scan
   /api/v1/reports/owasp/{task_id}:
     get:
       description: Generates OWASP report from a specific task result using task ID.
@@ -171,6 +236,49 @@ paths:
       summary: Get SANS report for a task result.
       tags:
       - report
+  /api/v1/scan/{task_id}:
+    delete:
+      description: Cancels an in-progress scan task
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cancel Scan
+      tags:
+      - Scan
+  /api/v1/scan/batch:
+    post:
+      consumes:
+      - application/json
+      description: Enqueues multiple scan tasks at once
+      parameters:
+      - description: Batch Scan Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.BatchScanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.BatchScanResponse'
+      summary: Batch Scan
+      tags:
+      - Scan
   /api/v1/scan/file:
     post:
       consumes:
@@ -287,6 +395,13 @@ paths:
         name: task_id
         required: true
         type: string
+      - description: Output format (json, sarif)
+        enum:
+        - json
+        - sarif
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       responses:
@@ -298,4 +413,34 @@ paths:
       summary: Get task status and results.
       tags:
       - scan
+  /health:
+    get:
+      description: Returns the health status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health Check
+      tags:
+      - System
+  /ready:
+    get:
+      description: Returns the readiness status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Readiness Check
+      tags:
+      - System
 swagger: "2.0"

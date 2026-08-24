@@ -79,6 +79,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/progress/{task_id}": {
+            "get": {
+                "description": "Streams scan progress via Server-Sent Events (SSE)",
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "Scan"
+                ],
+                "summary": "Task Progress",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SSE Stream",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/reports/owasp/{task_id}": {
             "get": {
                 "description": "Generates OWASP report from a specific task result using task ID.",
@@ -174,6 +203,40 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/scan/batch": {
+            "post": {
+                "description": "Enqueues multiple scan tasks at once",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Scan"
+                ],
+                "summary": "Batch Scan",
+                "parameters": [
+                    {
+                        "description": "Batch Scan Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.BatchScanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.BatchScanResponse"
                         }
                     }
                 }
@@ -342,6 +405,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/scan/{task_id}": {
+            "delete": {
+                "description": "Cancels an in-progress scan task",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Scan"
+                ],
+                "summary": "Cancel Scan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/status/{task_id}": {
             "get": {
                 "description": "Get the status and results of a scan task by its ID.",
@@ -359,6 +454,16 @@ const docTemplate = `{
                         "name": "task_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "json",
+                            "sarif"
+                        ],
+                        "type": "string",
+                        "description": "Output format (json, sarif)",
+                        "name": "format",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -371,19 +476,125 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/health": {
+            "get": {
+                "description": "Returns the health status of the API",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ready": {
+            "get": {
+                "description": "Returns the readiness status of the API",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Readiness Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "api.LocalScanRequest": {
+        "api.BatchScanRequest": {
+            "type": "object",
+            "required": [
+                "targets"
+            ],
+            "properties": {
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.BatchTarget"
+                    }
+                }
+            }
+        },
+        "api.BatchScanResponse": {
             "type": "object",
             "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "task_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.BatchTarget": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string"
+                },
+                "local_path": {
+                    "type": "string"
+                },
+                "mode": {
+                    "description": "simple | advanced",
+                    "type": "string"
+                },
+                "repo_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.LocalScanRequest": {
+            "type": "object",
+            "required": [
+                "local_path"
+            ],
+            "properties": {
+                "changed_files_only": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "diff_base_ref": {
+                    "type": "string",
+                    "example": "HEAD~1"
+                },
                 "language": {
                     "type": "string",
                     "example": "go"
                 },
                 "local_path": {
                     "type": "string",
-                    "example": "/path/to/local/repo"
+                    "example": "/armur/repo"
                 }
             }
         },
@@ -397,6 +608,14 @@ const docTemplate = `{
                 "repository_url": {
                     "type": "string",
                     "example": "https://github.com/Armur-Ai/Armur-Code-Scanner"
+                },
+                "webhook_secret": {
+                    "type": "string",
+                    "example": "my-hmac-secret"
+                },
+                "webhook_url": {
+                    "type": "string",
+                    "example": "https://hooks.example.com/armur"
                 }
             }
         },
@@ -467,7 +686,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Armur Code Scanner API",
+	Title:            "vibescan API",
 	Description:      "This is a code scanner service API.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
