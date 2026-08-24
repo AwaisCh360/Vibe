@@ -109,7 +109,7 @@ func FromScanResults(results map[string]interface{}, toolVersion string) *Log {
 		toolVersion = "dev"
 	}
 
-	var sarifResults []Result
+	sarifResults := make([]Result, 0)
 	rulesSeen := make(map[string]Rule)
 
 	// Process security_issues
@@ -189,7 +189,7 @@ func FromScanResults(results map[string]interface{}, toolVersion string) *Log {
 	}
 
 	// Build the ordered rules list.
-	var rules []Rule
+	rules := make([]Rule, 0)
 	for _, r := range rulesSeen {
 		rules = append(rules, r)
 	}
