@@ -1,7 +1,9 @@
 package worker
 
 import (
+	"armur-codescanner/internal/db"
 	"armur-codescanner/internal/logger"
+	"armur-codescanner/internal/models"
 	"armur-codescanner/internal/tasks"
 	"armur-codescanner/internal/webhook"
 	utils "armur-codescanner/pkg"
@@ -45,6 +47,21 @@ func (h *ScanTaskHandler) ProcessTask(ctx context.Context, task *asynq.Task) err
 	if err := tasks.SaveTaskResult(taskID, result); err != nil {
 		logger.Error().Str("task_id", taskID).Err(err).Msg("failed to store scan result")
 		return fmt.Errorf("failed to store scan result: %w", err)
+	}
+
+	// Sync result status back to the Dashboard DB
+	database := db.GetDB()
+	var scanHistory models.ScanHistory
+	if err := database.Where("task_id = ?", taskID).First(&scanHistory).Error; err == nil {
+		status := "success"
+		if s, ok := result["status"].(string); ok && s == "failed" {
+			status = "failed"
+		}
+		scanHistory.Status = status
+
+		// If we want to add critical/high bugs parsing in the future, we can do it here.
+
+		database.Save(&scanHistory)
 	}
 
 	// Fire webhook asynchronously if configured.
