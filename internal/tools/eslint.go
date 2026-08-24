@@ -135,7 +135,17 @@ func contains(slice []string, item string) bool {
 }
 
 func RunESLint(ctx context.Context, directory, configFile string) ([]map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", "--config", configFile, directory)
+	// ESLint v10 flat config requires the config file to be in a parent directory
+	// of the files being linted. We run eslint from the repo directory and copy
+	// the config file there temporarily.
+	configDest := filepath.Join(directory, filepath.Base(configFile))
+	if src, err := os.ReadFile(configFile); err == nil {
+		_ = os.WriteFile(configDest, src, 0644)
+		defer os.Remove(configDest)
+	}
+
+	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", ".")
+	cmd.Dir = directory
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
