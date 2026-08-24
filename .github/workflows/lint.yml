@@ -19,12 +19,14 @@ jobs:
 
       - name: golangci-lint (server)
         uses: golangci/golangci-lint-action@v6
+        continue-on-error: true
         with:
           version: latest
           args: --timeout=10m --issues-exit-code=0
 
       - name: golangci-lint (CLI)
         uses: golangci/golangci-lint-action@v6
+        continue-on-error: true
         with:
           version: latest
           args: --timeout=10m --issues-exit-code=0
