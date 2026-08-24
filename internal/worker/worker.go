@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hibiken/asynq"
 )
@@ -59,7 +60,13 @@ func (h *ScanTaskHandler) ProcessTask(ctx context.Context, task *asynq.Task) err
 		}
 		scanHistory.Status = status
 
-		// If we want to add critical/high bugs parsing in the future, we can do it here.
+		counts := map[string]int{"critical": 0, "high": 0, "medium": 0, "low": 0}
+		countBugs(result, counts)
+
+		scanHistory.CriticalBugs = counts["critical"]
+		scanHistory.HighBugs = counts["high"]
+		scanHistory.MediumBugs = counts["medium"]
+		scanHistory.LowBugs = counts["low"]
 
 		database.Save(&scanHistory)
 	}
@@ -81,4 +88,34 @@ func (h *ScanTaskHandler) ProcessTask(ctx context.Context, task *asynq.Task) err
 
 	logger.Info().Str("task_id", taskID).Msg("task processed successfully")
 	return nil
+}
+
+// countBugs recursively searches for "severity" keys in the scan result and tallies them.
+func countBugs(v interface{}, counts map[string]int) {
+	switch val := v.(type) {
+	case map[string]interface{}:
+		if sev, ok := val["severity"].(string); ok {
+			switch strings.ToLower(sev) {
+			case "critical":
+				counts["critical"]++
+			case "high":
+				counts["high"]++
+			case "medium":
+				counts["medium"]++
+			case "low":
+				counts["low"]++
+			}
+		}
+		for _, child := range val {
+			countBugs(child, counts)
+		}
+	case []interface{}:
+		for _, child := range val {
+			countBugs(child, counts)
+		}
+	case []map[string]interface{}:
+		for _, child := range val {
+			countBugs(child, counts)
+		}
+	}
 }
