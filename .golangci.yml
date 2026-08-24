@@ -1,0 +1,20 @@
+linters:
+  disable:
+    - errcheck
+    - unused
+    - ineffassign
+  enable:
+    - govet
+    - staticcheck
+
+issues:
+  exclude-use-default: false
+  exclude:
+    - "ST1005: error strings should not be capitalized"
+    - "S1039: unnecessary use of fmt.Sprintf"
+    - "QF1012: Use fmt.Fprintf(...) instead of WriteString"
+    - "SA9003: empty branch"
+    - "S1011: should replace loop with"
+    - "QF1001: could apply De Morgan's law"
+    - "S1031: unnecessary nil check around range"
+    - "QF1004: could use strings.ReplaceAll instead"
