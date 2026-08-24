@@ -1,7 +1,7 @@
 # ============================================================
 # Stage 1: Go binary builder
 # ============================================================
-FROM golang:1.25-alpine AS go-builder
+FROM golang:alpine AS go-builder
 
 WORKDIR /build
 RUN apk add --no-cache git
@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /armur-server ./cmd/server/main.go
 # ============================================================
 # Stage 2: Go security tools
 # ============================================================
-FROM golang:1.25-alpine AS go-tools
+FROM golang:alpine AS go-tools
 
 RUN apk add --no-cache git
 ENV GOBIN=/go-tools

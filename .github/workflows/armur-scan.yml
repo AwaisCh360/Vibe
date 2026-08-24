@@ -144,13 +144,7 @@ jobs:
 
           COUNT=0
           for LEVEL in $LEVELS; do
-            N=$(python3 -c "
-import json, sys
-data = json.load(open('$SARIF_FILE'))
-runs = data.get('runs', [])
-count = sum(1 for run in runs for r in run.get('results', []) if r.get('level') == '$LEVEL')
-print(count)
-")
+            N=$(python3 -c "import json; data = json.load(open('$SARIF_FILE')); print(sum(1 for run in data.get('runs', []) for r in run.get('results', []) if r.get('level') == '$LEVEL'))")
             COUNT=$((COUNT + N))
           done
 
