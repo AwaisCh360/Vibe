@@ -49,6 +49,16 @@ definitions:
     required:
     - local_path
     type: object
+  api.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   api.ScanRequest:
     properties:
       language:
@@ -63,6 +73,17 @@ definitions:
       webhook_url:
         example: https://hooks.example.com/armur
         type: string
+    type: object
+  api.SignupRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
     type: object
   utils.ReportItem:
     properties:
@@ -151,6 +172,52 @@ paths:
       summary: Trigger a code scan on a repository with advanced scans.
       tags:
       - scan
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: Login Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User Login
+      tags:
+      - Authentication
+  /api/v1/auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user in the SaaS platform
+      parameters:
+      - description: Signup Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User Signup
+      tags:
+      - Authentication
   /api/v1/progress/{task_id}:
     get:
       description: Streams scan progress via Server-Sent Events (SSE)
@@ -413,6 +480,23 @@ paths:
       summary: Get task status and results.
       tags:
       - scan
+  /api/v1/user/about:
+    get:
+      description: Returns the profile information of the currently authenticated
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get Current User Info
+      tags:
+      - Authentication
   /health:
     get:
       description: Returns the health status of the API

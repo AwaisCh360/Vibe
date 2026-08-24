@@ -15,10 +15,21 @@ func RegisterRoutes(r *gin.Engine) {
 	r.GET("/health", HealthCheck)
 	r.GET("/ready", ReadinessCheck)
 
+	// Public Auth routes
+	auth := r.Group("/api/v1/auth")
+	auth.Use(middleware.RateLimiter(60, 10))
+	{
+		auth.POST("/signup", Signup)
+		auth.POST("/login", Login)
+	}
+
 	api := r.Group("/api/v1")
 	api.Use(middleware.RateLimiter(60, 10)) // 60 req/min, burst of 10
-	api.Use(middleware.APIKeyAuth())
+	api.Use(middleware.JWTMiddleware())
 	{
+		// User endpoints
+		api.GET("/user/about", UserAbout)
+
 		// Scan routes
 		api.POST("/scan/repo", ScanHandler)
 		api.POST("/advanced-scan/repo", AdvancedScanResult)
