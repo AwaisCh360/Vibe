@@ -9,8 +9,6 @@ import (
 	"armur-codescanner/internal/redis"
 )
 
-var redisClient = redis.RedisClient()
-
 func SaveTaskResult(taskID string, result map[string]any) error {
 	ctx := context.Background()
 
@@ -19,13 +17,13 @@ func SaveTaskResult(taskID string, result map[string]any) error {
 		return err
 	}
 
-	return redisClient.Set(ctx, taskID, resultData, 24*time.Hour).Err()
+	return redis.RedisClient().Set(ctx, taskID, resultData, 24*time.Hour).Err()
 }
 
 func GetTaskResult(taskID string) (any, error) {
 	ctx := context.Background()
 
-	resultData, err := redisClient.Get(ctx, taskID).Result()
+	resultData, err := redis.RedisClient().Get(ctx, taskID).Result()
 	if err != nil {
 		if err.Error() == "redis: nil" {
 			return nil, errors.New("task result not found")

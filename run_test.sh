@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-echo "Waiting for docker build to finish..."
-wait
+echo "Pulling latest docker image..."
+docker pull ghcr.io/awaisch360/vibe:main
 
 echo "Restarting container..."
 docker kill local-armur || true
 docker rm local-armur || true
-docker run -d --name local-armur -p 4500:4500 local-armur-img
+docker run -d --name local-armur -p 4500:4500 ghcr.io/awaisch360/vibe:main
 
 echo "Waiting for server to start..."
 sleep 5
