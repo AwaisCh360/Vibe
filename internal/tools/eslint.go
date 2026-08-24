@@ -7,9 +7,20 @@ import (
 	utils "armur-codescanner/pkg"
 	"bytes"
 	"encoding/json"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
+
+// eslintConfigDir returns the directory containing the ESLint config files.
+// Defaults to /armur inside the container but can be overridden via ESLINT_CONFIG_DIR.
+func eslintConfigDir() string {
+	if d := os.Getenv("ESLINT_CONFIG_DIR"); d != "" {
+		return d
+	}
+	return "/armur"
+}
 
 type Issue struct {
 	Path    string `json:"path"`
@@ -32,8 +43,10 @@ func RunESLintAdvanced(ctx context.Context, directory string) (map[string]interf
 func RunESLintOnRepo(ctx context.Context, repoPath string) (map[string]interface{}, error) {
 	categorizedResults := utils.InitCategorizedResults()
 
+	configDir := eslintConfigDir()
+
 	logger.Info().Str("tool", "eslint-jsdoc").Str("dir", repoPath).Msg("running")
-	docResults, err := RunESLint(ctx, repoPath, "eslint_jsdoc.config.js")
+	docResults, err := RunESLint(ctx, repoPath, filepath.Join(configDir, "eslint_jsdoc.config.js"))
 	if err != nil {
 		logger.Warn().Str("tool", "eslint-jsdoc").Err(err).Msg("jsdoc check failed")
 	} else {
@@ -41,7 +54,7 @@ func RunESLintOnRepo(ctx context.Context, repoPath string) (map[string]interface
 	}
 
 	logger.Info().Str("tool", "eslint-security").Str("dir", repoPath).Msg("running")
-	securityResults, err := RunESLint(ctx, repoPath, "eslint_security.config.js")
+	securityResults, err := RunESLint(ctx, repoPath, filepath.Join(configDir, "eslint_security.config.js"))
 	if err != nil {
 		logger.Warn().Str("tool", "eslint-security").Err(err).Msg("security check failed")
 	} else {
@@ -49,7 +62,7 @@ func RunESLintOnRepo(ctx context.Context, repoPath string) (map[string]interface
 	}
 
 	logger.Info().Str("tool", "eslint-complexity").Str("dir", repoPath).Msg("running")
-	complexResults, err := RunESLint(ctx, repoPath, "eslint.config.js")
+	complexResults, err := RunESLint(ctx, repoPath, filepath.Join(configDir, "eslint.config.js"))
 	if err != nil {
 		logger.Warn().Str("tool", "eslint-complexity").Err(err).Msg("complexity check failed")
 	} else {
@@ -64,7 +77,7 @@ func RunESLintOnRepo(ctx context.Context, repoPath string) (map[string]interface
 func RunESLintAdvancedOnRepo(ctx context.Context, repoPath string) (map[string][]interface{}, error) {
 	categorizedResults := utils.InitAdvancedCategorizedResults()
 
-	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", "--config", "eslint_deadcode.config.js", repoPath)
+	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", "--config", filepath.Join(eslintConfigDir(), "eslint_deadcode.config.js"), repoPath)
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Debug().Str("tool", "eslint-deadcode").Err(err).Msg("non-zero exit (may still have results)")
