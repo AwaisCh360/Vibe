@@ -38,10 +38,10 @@ func CategorizePylintResults(results string, directory string) map[string][]inte
 			return categorizedResults
 		}
 
-		directory = strings.Replace(directory, "/armur/", "", -1)
+		directory = strings.ReplaceAll(directory, "/armur/", "")
 		for _, result := range parsedResults {
 			if path, ok := result["path"].(string); ok {
-				result["path"] = strings.Replace(path, directory, "", -1)
+				result["path"] = strings.ReplaceAll(path, directory, "")
 			}
 			categorizedResults[ANTIPATTERNS_BUGS] = append(categorizedResults[ANTIPATTERNS_BUGS], result)
 		}

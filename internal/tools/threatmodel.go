@@ -21,11 +21,11 @@ type RouteInfo struct {
 
 // ThreatModel represents the threat model generated from code analysis.
 type ThreatModel struct {
-	Routes       []RouteInfo            `json:"routes"`
-	EntryPoints  int                    `json:"entry_points"`
-	DataStores   []string               `json:"data_stores"`
-	ExternalAPIs []string               `json:"external_apis"`
-	Mermaid      string                 `json:"mermaid_dfd"`
+	Routes       []RouteInfo `json:"routes"`
+	EntryPoints  int         `json:"entry_points"`
+	DataStores   []string    `json:"data_stores"`
+	ExternalAPIs []string    `json:"external_apis"`
+	Mermaid      string      `json:"mermaid_dfd"`
 }
 
 // Route detection patterns per framework.
@@ -130,15 +130,15 @@ func generateDFD(model *ThreatModel) string {
 	// Data stores
 	for i, ds := range model.DataStores {
 		id := fmt.Sprintf("DB%d", i)
-		b.WriteString(fmt.Sprintf("    %s[(\"%s\")]\n", id, ds))
-		b.WriteString(fmt.Sprintf("    App --> %s\n", id))
+		fmt.Fprintf(&b, "    %s[(\"%s\")]\n", id, ds)
+		fmt.Fprintf(&b, "    App --> %s\n", id)
 	}
 
 	// External APIs
 	for i, api := range model.ExternalAPIs {
 		id := fmt.Sprintf("API%d", i)
-		b.WriteString(fmt.Sprintf("    %s[\"%s\"]\n", id, api))
-		b.WriteString(fmt.Sprintf("    App --> %s\n", id))
+		fmt.Fprintf(&b, "    %s[\"%s\"]\n", id, api)
+		fmt.Fprintf(&b, "    App --> %s\n", id)
 	}
 
 	// Style

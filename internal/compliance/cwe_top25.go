@@ -9,7 +9,7 @@ import (
 // CWETop25Entry represents a single entry in the CWE Top 25 Most Dangerous Software Weaknesses.
 type CWETop25Entry struct {
 	Rank         int    `json:"rank"`
-	ID           string `json:"id"`   // e.g. "CWE-787"
+	ID           string `json:"id"` // e.g. "CWE-787"
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	FindingCount int    `json:"finding_count"`
@@ -103,8 +103,8 @@ func FormatCWETop25Report(report []CWETop25Entry) string {
 		if entry.Status == "fail" {
 			icon = "✗"
 		}
-		b.WriteString(fmt.Sprintf("%s  #%-2d  %-10s  %-55s  %d findings\n",
-			icon, entry.Rank, entry.ID, entry.Name, entry.FindingCount))
+		fmt.Fprintf(&b, "%s  #%-2d  %-10s  %-55s  %d findings\n",
+			icon, entry.Rank, entry.ID, entry.Name, entry.FindingCount)
 	}
 
 	return b.String()

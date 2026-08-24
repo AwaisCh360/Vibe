@@ -79,11 +79,11 @@ func CategorizeJSCPDResults(results []map[string]interface{}, directory string) 
 		startInSecondFile, _ := secondFile["start"].(float64)
 		endInSecondFile, _ := secondFile["end"].(float64)
 
-		cleanDirectory := strings.Replace(directory, "/armur/", "", -1)
+		cleanDirectory := strings.ReplaceAll(directory, "/armur/", "")
 
 		categorizedResults[utils.DUPLICATE_CODE] = append(categorizedResults[utils.DUPLICATE_CODE], map[string]interface{}{
-			"first_file":           strings.Replace(firstFileName, cleanDirectory, "", -1),
-			"second_file":          strings.Replace(secondFileName, cleanDirectory, "", -1),
+			"first_file":           strings.ReplaceAll(firstFileName, cleanDirectory, ""),
+			"second_file":          strings.ReplaceAll(secondFileName, cleanDirectory, ""),
 			"start_in_first_file":  startInFirstFile,
 			"end_in_first_file":    endInFirstFile,
 			"start_in_second_file": startInSecondFile,

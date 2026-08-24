@@ -57,7 +57,7 @@ var languageExtension = map[string]string{
 	"py":         ".py",
 	"javascript": ".js",
 	"js":         ".js",
-	"typescript":  ".ts",
+	"typescript": ".ts",
 	"ts":         ".ts",
 	"rust":       ".rs",
 	"rs":         ".rs",
@@ -82,7 +82,7 @@ var normalizeLanguage = map[string]string{
 	"py":         "py",
 	"javascript": "js",
 	"js":         "js",
-	"typescript":  "js",
+	"typescript": "js",
 	"ts":         "js",
 	"rust":       "rust",
 	"rs":         "rust",
@@ -334,23 +334,23 @@ func registerCheckDependencyTool(s *server.MCPServer) {
 		}
 
 		var sb strings.Builder
-		sb.WriteString(fmt.Sprintf("Found %d known vulnerabilities for %s@%s (%s):\n\n", len(osvResp.Vulns), pkg, version, ecosystem))
+		fmt.Fprintf(&sb, "Found %d known vulnerabilities for %s@%s (%s):\n\n", len(osvResp.Vulns), pkg, version, ecosystem)
 
 		for i, vuln := range osvResp.Vulns {
-			sb.WriteString(fmt.Sprintf("--- Vulnerability %d ---\n", i+1))
-			sb.WriteString(fmt.Sprintf("ID: %s\n", vuln.ID))
+			fmt.Fprintf(&sb, "--- Vulnerability %d ---\n", i+1)
+			fmt.Fprintf(&sb, "ID: %s\n", vuln.ID)
 
 			if len(vuln.Aliases) > 0 {
-				sb.WriteString(fmt.Sprintf("Aliases: %s\n", strings.Join(vuln.Aliases, ", ")))
+				fmt.Fprintf(&sb, "Aliases: %s\n", strings.Join(vuln.Aliases, ", "))
 			}
 
 			if vuln.Summary != "" {
-				sb.WriteString(fmt.Sprintf("Summary: %s\n", vuln.Summary))
+				fmt.Fprintf(&sb, "Summary: %s\n", vuln.Summary)
 			}
 
 			// Show severity if available
 			for _, sev := range vuln.Severity {
-				sb.WriteString(fmt.Sprintf("Severity (%s): %s\n", sev.Type, sev.Score))
+				fmt.Fprintf(&sb, "Severity (%s): %s\n", sev.Type, sev.Score)
 			}
 
 			// Show fix versions
@@ -358,7 +358,7 @@ func registerCheckDependencyTool(s *server.MCPServer) {
 				for _, r := range aff.Ranges {
 					for _, ev := range r.Events {
 						if ev.Fixed != "" {
-							sb.WriteString(fmt.Sprintf("Fixed in: %s\n", ev.Fixed))
+							fmt.Fprintf(&sb, "Fixed in: %s\n", ev.Fixed)
 						}
 					}
 				}
@@ -370,7 +370,7 @@ func registerCheckDependencyTool(s *server.MCPServer) {
 				if refCount >= 3 {
 					break
 				}
-				sb.WriteString(fmt.Sprintf("Reference: %s\n", ref.URL))
+				fmt.Fprintf(&sb, "Reference: %s\n", ref.URL)
 				refCount++
 			}
 
@@ -452,23 +452,23 @@ func registerExplainFindingTool(s *server.MCPServer) {
 			}
 
 			if desc, ok := commonCWEDescriptions[normalizedCWE]; ok {
-				sb.WriteString(fmt.Sprintf("**%s**: %s\n\n", normalizedCWE, desc))
+				fmt.Fprintf(&sb, "**%s**: %s\n\n", normalizedCWE, desc)
 			} else {
-				sb.WriteString(fmt.Sprintf("**%s**: This is a known weakness category. See https://cwe.mitre.org/data/definitions/%s.html for details.\n\n",
-					normalizedCWE, strings.TrimPrefix(normalizedCWE, "CWE-")))
+				fmt.Fprintf(&sb, "**%s**: This is a known weakness category. See https://cwe.mitre.org/data/definitions/%s.html for details.\n\n",
+					normalizedCWE, strings.TrimPrefix(normalizedCWE, "CWE-"))
 			}
 		}
 
 		if message != "" {
-			sb.WriteString(fmt.Sprintf("**Finding**: %s\n\n", message))
+			fmt.Fprintf(&sb, "**Finding**: %s\n\n", message)
 		}
 
 		if file != "" {
-			sb.WriteString(fmt.Sprintf("**Location**: %s\n\n", file))
+			fmt.Fprintf(&sb, "**Location**: %s\n\n", file)
 		}
 
 		if codeContext != "" {
-			sb.WriteString(fmt.Sprintf("**Code context**:\n```\n%s\n```\n\n", codeContext))
+			fmt.Fprintf(&sb, "**Code context**:\n```\n%s\n```\n\n", codeContext)
 		}
 
 		sb.WriteString("**Recommendation**: Review the flagged code for the vulnerability described above. Apply input validation, proper escaping, or use safe API alternatives as appropriate.\n")
@@ -572,15 +572,15 @@ func registerGetHistoryTool(s *server.MCPServer) {
 
 		// Format as readable text with JSON data
 		var sb strings.Builder
-		sb.WriteString(fmt.Sprintf("Recent scan history (%d results):\n\n", len(entries)))
+		fmt.Fprintf(&sb, "Recent scan history (%d results):\n\n", len(entries))
 
 		for _, e := range entries {
 			totalFindings := e.Critical + e.High + e.Medium + e.Low + e.Info
-			sb.WriteString(fmt.Sprintf("Scan #%d | %s\n", e.ID, e.CreatedAt))
-			sb.WriteString(fmt.Sprintf("  Target:   %s\n", e.Target))
-			sb.WriteString(fmt.Sprintf("  Language: %s | Type: %s | Status: %s\n", e.Language, e.ScanType, e.Status))
-			sb.WriteString(fmt.Sprintf("  Findings: %d total (Critical: %d, High: %d, Medium: %d, Low: %d, Info: %d)\n",
-				totalFindings, e.Critical, e.High, e.Medium, e.Low, e.Info))
+			fmt.Fprintf(&sb, "Scan #%d | %s\n", e.ID, e.CreatedAt)
+			fmt.Fprintf(&sb, "  Target:   %s\n", e.Target)
+			fmt.Fprintf(&sb, "  Language: %s | Type: %s | Status: %s\n", e.Language, e.ScanType, e.Status)
+			fmt.Fprintf(&sb, "  Findings: %d total (Critical: %d, High: %d, Medium: %d, Low: %d, Info: %d)\n",
+				totalFindings, e.Critical, e.High, e.Medium, e.Low, e.Info)
 			sb.WriteString("\n")
 		}
 

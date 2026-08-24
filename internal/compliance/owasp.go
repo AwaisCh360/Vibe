@@ -8,11 +8,11 @@ import (
 
 // OWASPCategory represents an OWASP Top 10 2021 category.
 type OWASPCategory struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	FindingCount int   `json:"finding_count"`
-	Status      string `json:"status"` // "pass", "fail", "not_applicable"
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	FindingCount int    `json:"finding_count"`
+	Status       string `json:"status"` // "pass", "fail", "not_applicable"
 }
 
 // OWASPTop10 is the full OWASP Top 10 2021 list.
@@ -125,8 +125,8 @@ func FormatOWASPReport(report []OWASPCategory) string {
 		if cat.Status == "fail" {
 			icon = "✗"
 		}
-		b.WriteString(fmt.Sprintf("%s  %-12s  %-40s  %d findings\n",
-			icon, cat.ID, cat.Name, cat.FindingCount))
+		fmt.Fprintf(&b, "%s  %-12s  %-40s  %d findings\n",
+			icon, cat.ID, cat.Name, cat.FindingCount)
 	}
 
 	return b.String()

@@ -153,7 +153,7 @@ func aiEnhancedDetect(ctx context.Context, dirPath string, provider AIProvider) 
 			if len(content) > 2000 {
 				content = content[:2000]
 			}
-			fileInfo.WriteString(fmt.Sprintf("--- %s ---\n%s\n\n", name, string(content)))
+			fmt.Fprintf(&fileInfo, "--- %s ---\n%s\n\n", name, string(content))
 		}
 	}
 

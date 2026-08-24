@@ -20,7 +20,7 @@ type AttackGraph struct {
 type AttackNode struct {
 	ID        string `json:"id"`
 	FindingID string `json:"finding_id,omitempty"`
-	Type      string `json:"type"`     // entry_point, vulnerability, privilege, asset
+	Type      string `json:"type"` // entry_point, vulnerability, privilege, asset
 	Label     string `json:"label"`
 	Severity  string `json:"severity"`
 }
@@ -143,9 +143,7 @@ func BuildGraph(findings []models.Finding) *AttackGraph {
 				graph.Nodes = append(graph.Nodes, node)
 			}
 		}
-		for _, edge := range path.edges {
-			graph.Edges = append(graph.Edges, edge)
-		}
+		graph.Edges = append(graph.Edges, path.edges...)
 		graph.Paths = append(graph.Paths, path.attackPath)
 	}
 
@@ -320,16 +318,16 @@ func (p *AttackPath) ToMermaid(graph *AttackGraph) string {
 		}
 
 		label := strings.ReplaceAll(node.Label, "\"", "'")
-		b.WriteString(fmt.Sprintf("    %s[\"%s\"]\n", nodeID, label))
+		fmt.Fprintf(&b, "    %s[\"%s\"]\n", nodeID, label)
 
 		// Style based on type
 		switch node.Type {
 		case "vulnerability":
-			b.WriteString(fmt.Sprintf("    style %s fill:#ff4444,color:#fff\n", nodeID))
+			fmt.Fprintf(&b, "    style %s fill:#ff4444,color:#fff\n", nodeID)
 		case "asset":
-			b.WriteString(fmt.Sprintf("    style %s fill:#ff0000,color:#fff\n", nodeID))
+			fmt.Fprintf(&b, "    style %s fill:#ff0000,color:#fff\n", nodeID)
 		case "entry_point":
-			b.WriteString(fmt.Sprintf("    style %s fill:#4488ff,color:#fff\n", nodeID))
+			fmt.Fprintf(&b, "    style %s fill:#4488ff,color:#fff\n", nodeID)
 		}
 
 		// Edge to next node
@@ -340,7 +338,7 @@ func (p *AttackPath) ToMermaid(graph *AttackGraph) string {
 			if edge != nil {
 				edgeLabel = edge.Label
 			}
-			b.WriteString(fmt.Sprintf("    %s -->|%s| %s\n", nodeID, edgeLabel, nextID))
+			fmt.Fprintf(&b, "    %s -->|%s| %s\n", nodeID, edgeLabel, nextID)
 		}
 	}
 

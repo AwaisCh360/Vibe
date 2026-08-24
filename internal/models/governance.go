@@ -27,13 +27,13 @@ func DefaultSLA() SLA {
 
 // SLAStatus tracks whether a finding is within SLA.
 type SLAStatus struct {
-	FindingID   string        `json:"finding_id"`
-	Severity    Severity      `json:"severity"`
-	DetectedAt  time.Time     `json:"detected_at"`
-	Deadline    time.Time     `json:"deadline"`
-	Overdue     bool          `json:"overdue"`
-	TimeLeft    time.Duration `json:"time_left,omitempty"`
-	OverdueBy   time.Duration `json:"overdue_by,omitempty"`
+	FindingID  string        `json:"finding_id"`
+	Severity   Severity      `json:"severity"`
+	DetectedAt time.Time     `json:"detected_at"`
+	Deadline   time.Time     `json:"deadline"`
+	Overdue    bool          `json:"overdue"`
+	TimeLeft   time.Duration `json:"time_left,omitempty"`
+	OverdueBy  time.Duration `json:"overdue_by,omitempty"`
 }
 
 // CheckSLA determines if a finding is within its remediation SLA.
@@ -124,12 +124,12 @@ func FormatDebt(debt SecurityDebt) string {
 	var b strings.Builder
 	b.WriteString("Security Debt Summary\n")
 	b.WriteString(strings.Repeat("─", 40) + "\n")
-	b.WriteString(fmt.Sprintf("Critical:  %.1fh\n", debt.CriticalHours))
-	b.WriteString(fmt.Sprintf("High:      %.1fh\n", debt.HighHours))
-	b.WriteString(fmt.Sprintf("Medium:    %.1fh\n", debt.MediumHours))
-	b.WriteString(fmt.Sprintf("Low:       %.1fh\n", debt.LowHours))
+	fmt.Fprintf(&b, "Critical:  %.1fh\n", debt.CriticalHours)
+	fmt.Fprintf(&b, "High:      %.1fh\n", debt.HighHours)
+	fmt.Fprintf(&b, "Medium:    %.1fh\n", debt.MediumHours)
+	fmt.Fprintf(&b, "Low:       %.1fh\n", debt.LowHours)
 	b.WriteString(strings.Repeat("─", 40) + "\n")
-	b.WriteString(fmt.Sprintf("Total:     %.1fh (~%.0f engineering days)\n", debt.TotalHours, debt.TotalHours/8))
+	fmt.Fprintf(&b, "Total:     %.1fh (~%.0f engineering days)\n", debt.TotalHours, debt.TotalHours/8)
 	return b.String()
 }
 
