@@ -1,7 +1,7 @@
 # ============================================================
 # Stage 1: Go binary builder
 # ============================================================
-FROM golang:1.23-alpine AS go-builder
+FROM golang:1.25-alpine AS go-builder
 
 WORKDIR /build
 RUN apk add --no-cache git
@@ -13,18 +13,18 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /armur-server ./cmd/server/main.go
 # ============================================================
 # Stage 2: Go security tools
 # ============================================================
-FROM golang:1.23-alpine AS go-tools
+FROM golang:1.25-alpine AS go-tools
 
 RUN apk add --no-cache git
 ENV GOBIN=/go-tools
 RUN mkdir -p /go-tools
 
-RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.20.0 && \
+RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.28.0 && \
     go install golang.org/x/lint/golint@latest && \
     go install honnef.co/go/tools/cmd/staticcheck@latest && \
-    go install github.com/fzipp/gocyclo/cmd/gocyclo@latest && \
-    go install golang.org/x/tools/cmd/deadcode@latest && \
-    go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+    go install github.com/fzipp/gocyclo/cmd/gocyclo@v0.6.0 && \
+    go install golang.org/x/tools/cmd/deadcode@v0.49.0 && \
+    go install github.com/google/osv-scanner/cmd/osv-scanner@v1.9.2
 
 # ============================================================
 # Stage 3: Python security tools
@@ -32,7 +32,10 @@ RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.20.0 && \
 FROM python:3.12-slim AS python-tools
 
 RUN pip install --no-cache-dir \
-    semgrep bandit pydocstyle radon pylint trufflehog3 checkov vulture
+    semgrep==1.174.0 bandit==1.9.4 pydocstyle==6.3.0 radon==6.0.1 pylint==4.0.7 checkov==3.3.13 vulture==2.16 && \
+    python -m venv /usr/local/venv-truffle && \
+    /usr/local/venv-truffle/bin/pip install trufflehog3==3.0.10 && \
+    ln -s /usr/local/venv-truffle/bin/trufflehog3 /usr/local/bin/trufflehog3
 
 # ============================================================
 # Runtime target: armur:go  (Go tools only)
@@ -80,10 +83,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=go-builder /armur-server /usr/local/bin/armur-server
-RUN npm install -g eslint jscpd
+RUN npm install -g eslint@10.9.0 jscpd@5.0.16
 COPY . /armur
 WORKDIR /armur
-RUN npm install @eslint/js eslint-plugin-jsdoc eslint-plugin-security
+RUN npm install @eslint/js@10.0.1 eslint-plugin-jsdoc@64.2.1 eslint-plugin-security@4.0.1
 COPY rule_config/eslint/eslint.config.js           /armur/eslint.config.js
 COPY rule_config/eslint/eslint_jsdoc.config.js     /armur/eslint_jsdoc.config.js
 COPY rule_config/eslint/eslint_security.config.js  /armur/eslint_security.config.js
@@ -117,14 +120,14 @@ COPY --from=python-tools /usr/local /usr/local
 
 # Trivy
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-    | sh -s -- -b /usr/local/bin v0.55.2
+    | sh -s -- -b /usr/local/bin v0.74.0
 
 # Node tools
-RUN npm install -g eslint jscpd
+RUN npm install -g eslint@10.9.0 jscpd@5.0.16
 
 COPY . /armur
 WORKDIR /armur
-RUN npm install @eslint/js eslint-plugin-jsdoc eslint-plugin-security
+RUN npm install @eslint/js@10.0.1 eslint-plugin-jsdoc@64.2.1 eslint-plugin-security@4.0.1
 
 COPY rule_config/eslint/eslint.config.js           /armur/eslint.config.js
 COPY rule_config/eslint/eslint_jsdoc.config.js     /armur/eslint_jsdoc.config.js

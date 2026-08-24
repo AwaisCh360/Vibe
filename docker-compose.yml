@@ -5,7 +5,6 @@ services:
     build: .
     container_name: api_service
     restart: always
-    command: go run ./cmd/server/main.go
     volumes:
       - ./shared_tmp:/armur/repos
     ports:
