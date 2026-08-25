@@ -36,7 +36,7 @@ RUN pip3 install --no-cache-dir --break-system-packages mythril || true
 RUN pip3 install --no-cache-dir --break-system-packages checkov || true
 
 # 4. Install Node.js security tools (including SBOM)
-RUN npm install -g eslint@10.9.0 jscpd@5.0.16 @cyclonedx/cdxgen jsfuzz || true
+RUN npm install -g eslint@latest jscpd@latest @cyclonedx/cdxgen jsfuzz || true
 
 # 5. Install Ruby tools
 RUN gem install brakeman bundler-audit || true
@@ -52,15 +52,20 @@ RUN rustup component add clippy && \
     cargo install cargo-audit cargo-geiger || true
 
 # 8. Install Cloud / Standalone Binaries
-RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.74.0 && \
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin && \
     curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin && \
-    wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 && chmod +x /usr/local/bin/hadolint && \
+    HADOLINT_VERSION=$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/latest | jq -r .tag_name) && \
+    wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 && chmod +x /usr/local/bin/hadolint && \
     curl -sSfL https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz | tar -xz -C /usr/local/bin && \
     wget -qO /usr/local/bin/kube-score https://github.com/zegl/kube-score/releases/latest/download/kube-score_linux_amd64 && chmod +x /usr/local/bin/kube-score && \
-    wget -qO /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 && chmod +x /usr/local/bin/local-php-security-checker && \
-    wget -qO /tmp/terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v1.19.9/terrascan_1.19.9_Linux_x86_64.tar.gz && tar -xzf /tmp/terrascan.tar.gz -C /usr/local/bin terrascan && rm /tmp/terrascan.tar.gz && \
-    wget -qO /tmp/kics.tar.gz https://github.com/Checkmarx/kics/releases/download/v2.1.20/kics_2.1.20_linux_amd64.tar.gz && tar -xzf /tmp/kics.tar.gz -C /usr/local/bin kics && rm /tmp/kics.tar.gz && \
-    wget -qO /tmp/spotbugs.zip https://github.com/spotbugs/spotbugs/releases/download/4.10.4/spotbugs-4.10.4.zip && unzip -q /tmp/spotbugs.zip -d /opt/ && ln -s /opt/spotbugs-4.10.4/bin/spotbugs /usr/local/bin/spotbugs && rm /tmp/spotbugs.zip || true
+    PHP_CHECKER_VERSION=$(curl -s https://api.github.com/repos/fabpot/local-php-security-checker/releases/latest | jq -r .tag_name) && \
+    wget -qO /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/${PHP_CHECKER_VERSION}/local-php-security-checker_${PHP_CHECKER_VERSION#v}_linux_amd64 && chmod +x /usr/local/bin/local-php-security-checker && \
+    TERRASCAN_VERSION=$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | jq -r .tag_name) && \
+    wget -qO /tmp/terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/${TERRASCAN_VERSION}/terrascan_${TERRASCAN_VERSION#v}_Linux_x86_64.tar.gz && tar -xzf /tmp/terrascan.tar.gz -C /usr/local/bin terrascan && rm /tmp/terrascan.tar.gz && \
+    KICS_VERSION=$(curl -s https://api.github.com/repos/Checkmarx/kics/releases | jq -r '[.[] | select(.assets | length > 2)][0].tag_name') && \
+    wget -qO /tmp/kics.tar.gz https://github.com/Checkmarx/kics/releases/download/${KICS_VERSION}/kics_${KICS_VERSION#v}_linux_amd64.tar.gz && tar -xzf /tmp/kics.tar.gz -C /usr/local/bin kics && rm /tmp/kics.tar.gz && \
+    SPOTBUGS_VERSION=$(curl -s https://api.github.com/repos/spotbugs/spotbugs/releases/latest | jq -r .tag_name) && \
+    wget -qO /tmp/spotbugs.zip https://github.com/spotbugs/spotbugs/releases/download/${SPOTBUGS_VERSION}/spotbugs-${SPOTBUGS_VERSION}.zip && unzip -q /tmp/spotbugs.zip -d /opt/ && ln -s /opt/spotbugs-${SPOTBUGS_VERSION}/bin/spotbugs /usr/local/bin/spotbugs && rm /tmp/spotbugs.zip || true
 
 # 9. Install Dependency-Check
 RUN VERSION=$(curl -s https://api.github.com/repos/jeremylong/DependencyCheck/releases/latest | jq -r .tag_name | sed 's/v//') && \
