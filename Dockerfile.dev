@@ -30,7 +30,8 @@ RUN go install golang.org/x/vuln/cmd/govulncheck@latest && \
     go install github.com/google/osv-scanner/cmd/osv-scanner@v1 && \
     go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest && \
     go install github.com/zricethezav/gitleaks/v8@latest && \
-    go install github.com/aquasecurity/tfsec/cmd/tfsec@latest || true
+    go install github.com/aquasecurity/tfsec/cmd/tfsec@latest || true && \
+    go clean -cache -modcache
 
 # 3. Python Tools
 # Pip configuration for reliability during massive installs
@@ -43,7 +44,8 @@ RUN pip3 install --no-cache-dir --break-system-packages mythril || true
 RUN pip3 install --no-cache-dir --break-system-packages checkov || true
 
 # 4. Install Node.js security tools (including SBOM)
-RUN npm install -g eslint@latest jscpd@latest @cyclonedx/cdxgen jsfuzz || true
+RUN npm install -g eslint@latest jscpd@latest @cyclonedx/cdxgen jsfuzz || true && \
+    npm cache clean --force
 
 # 5. Install Ruby tools
 RUN gem install bundler brakeman bundler-audit || true
@@ -70,7 +72,8 @@ ENV PATH="/root/.composer/vendor/bin:${PATH}"
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup component add clippy && \
-    cargo install cargo-audit cargo-geiger || true
+    cargo install cargo-audit cargo-geiger || true && \
+    rm -rf /root/.cargo/registry /root/.cargo/git
 
 # 8. Install Cloud / Standalone Binaries
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin || true
