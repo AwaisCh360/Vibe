@@ -9,17 +9,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
+# Install .NET SDK for C# analyzers
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0 --install-dir /usr/share/dotnet && \
+    ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
+    dotnet tool install --global security-code-scan.tool && \
+    dotnet tool install --global roslynator.dotnet.cli
+ENV PATH="/root/.dotnet/tools:${PATH}"
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # 2. Go security tools
 RUN go install golang.org/x/vuln/cmd/govulncheck@latest && \
     go install honnef.co/go/tools/cmd/staticcheck@latest && \
-    go install github.com/kisielk/errcheck@latest && \
-    go install github.com/gordonklaus/ineffassign@latest && \
-    go install github.com/jgautheron/goconst/cmd/goconst@latest && \
+    go install github.com/securego/gosec/v2/cmd/gosec@latest && \
+    go install github.com/fzipp/gocyclo/cmd/gocyclo@latest && \
+    go install golang.org/x/tools/cmd/deadcode@latest && \
+    go install golang.org/x/lint/golint@latest && \
+    go install github.com/google/osv-scanner/cmd/osv-scanner@v1 && \
+    go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest && \
     go install github.com/zricethezav/gitleaks/v8@latest && \
-    go install github.com/aquasecurity/tfsec/cmd/tfsec@latest
+    go install github.com/aquasecurity/tfsec/cmd/tfsec@latest || true
 
 # 3. Python Tools
 # Pip configuration for reliability during massive installs
@@ -35,7 +45,22 @@ RUN pip3 install --no-cache-dir --break-system-packages checkov || true
 RUN npm install -g eslint@latest jscpd@latest @cyclonedx/cdxgen jsfuzz || true
 
 # 5. Install Ruby tools
+# 5. Install Ruby tools
 RUN gem install brakeman bundler-audit || true
+
+# 5.5 Install PMD (Java) and SwiftLint (Swift)
+RUN PMD_VERSION=$(curl -s https://api.github.com/repos/pmd/pmd/releases/latest | jq -r .tag_name | sed 's/pmd_releases\///') && \
+    wget -qO /tmp/pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases/${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip && \
+    unzip -q /tmp/pmd.zip -d /opt/ && \
+    ln -s /opt/pmd-bin-${PMD_VERSION}/bin/pmd /usr/local/bin/pmd && \
+    rm /tmp/pmd.zip || true
+
+RUN SWIFTLINT_VERSION=$(curl -s https://api.github.com/repos/realm/SwiftLint/releases/latest | jq -r .tag_name) && \
+    wget -qO /tmp/swiftlint.zip https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/swiftlint_linux_amd64.zip && \
+    unzip -q /tmp/swiftlint.zip -d /usr/local/bin swiftlint && \
+    chmod +x /usr/local/bin/swiftlint && \
+    rm /tmp/swiftlint.zip || true
+
 
 # 6. Install PHP tools
 RUN composer global require "squizlabs/php_codesniffer=*" "vimeo/psalm" || true
@@ -53,6 +78,7 @@ RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh |
 RUN HADOLINT_VERSION=$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/latest | jq -r .tag_name) && wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 && chmod +x /usr/local/bin/hadolint || true
 RUN curl -sSfL https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz | tar -xz -C /usr/local/bin || true
 RUN KUBESCORE_VERSION=$(curl -s https://api.github.com/repos/zegl/kube-score/releases/latest | jq -r .tag_name) && wget -qO /usr/local/bin/kube-score https://github.com/zegl/kube-score/releases/download/${KUBESCORE_VERSION}/kube-score_${KUBESCORE_VERSION#v}_linux_amd64 && chmod +x /usr/local/bin/kube-score || true
+RUN KUBESEC_VERSION=$(curl -s https://api.github.com/repos/controlplaneio/kubesec/releases/latest | jq -r .tag_name) && wget -qO /tmp/kubesec.tar.gz https://github.com/controlplaneio/kubesec/releases/download/${KUBESEC_VERSION}/kubesec_linux_amd64.tar.gz && tar -xzf /tmp/kubesec.tar.gz -C /usr/local/bin kubesec && rm /tmp/kubesec.tar.gz || true
 RUN PHP_CHECKER_VERSION=$(curl -s https://api.github.com/repos/fabpot/local-php-security-checker/releases/latest | jq -r .tag_name) && wget -qO /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/${PHP_CHECKER_VERSION}/local-php-security-checker_linux_amd64 && chmod +x /usr/local/bin/local-php-security-checker || true
 RUN TERRASCAN_VERSION=$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | jq -r .tag_name) && wget -qO /tmp/terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/${TERRASCAN_VERSION}/terrascan_${TERRASCAN_VERSION#v}_Linux_x86_64.tar.gz && tar -xzf /tmp/terrascan.tar.gz -C /usr/local/bin terrascan && rm /tmp/terrascan.tar.gz || true
 RUN KICS_VERSION=$(curl -s https://api.github.com/repos/Checkmarx/kics/releases | jq -r '[.[] | select(.assets | length > 2)][0].tag_name') && wget -qO /tmp/kics.tar.gz https://github.com/Checkmarx/kics/releases/download/${KICS_VERSION}/kics_${KICS_VERSION#v}_linux_amd64.tar.gz && tar -xzf /tmp/kics.tar.gz -C /usr/local/bin kics && rm /tmp/kics.tar.gz || true
