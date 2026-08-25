@@ -3,8 +3,10 @@ FROM golang:bookworm
 # 1. Install System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates curl wget unzip jq build-essential gcc python3 python3-pip python3-venv python3-dev \
-    ruby ruby-dev openjdk-17-jdk php php-cli php-xml composer nodejs npm \
+    ruby ruby-dev openjdk-17-jdk php php-cli php-xml composer npm \
     shellcheck checksec cppcheck flawfinder libssl-dev pkg-config && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -50,7 +52,7 @@ RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin || true
 RUN HADOLINT_VERSION=$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/latest | jq -r .tag_name) && wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 && chmod +x /usr/local/bin/hadolint || true
 RUN curl -sSfL https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz | tar -xz -C /usr/local/bin || true
-RUN wget -qO /usr/local/bin/kube-score https://github.com/zegl/kube-score/releases/latest/download/kube-score_linux_amd64 && chmod +x /usr/local/bin/kube-score || true
+RUN KUBESCORE_VERSION=$(curl -s https://api.github.com/repos/zegl/kube-score/releases/latest | jq -r .tag_name) && wget -qO /usr/local/bin/kube-score https://github.com/zegl/kube-score/releases/download/${KUBESCORE_VERSION}/kube-score_${KUBESCORE_VERSION#v}_linux_amd64 && chmod +x /usr/local/bin/kube-score || true
 RUN PHP_CHECKER_VERSION=$(curl -s https://api.github.com/repos/fabpot/local-php-security-checker/releases/latest | jq -r .tag_name) && wget -qO /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/${PHP_CHECKER_VERSION}/local-php-security-checker_linux_amd64 && chmod +x /usr/local/bin/local-php-security-checker || true
 RUN TERRASCAN_VERSION=$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | jq -r .tag_name) && wget -qO /tmp/terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/${TERRASCAN_VERSION}/terrascan_${TERRASCAN_VERSION#v}_Linux_x86_64.tar.gz && tar -xzf /tmp/terrascan.tar.gz -C /usr/local/bin terrascan && rm /tmp/terrascan.tar.gz || true
 RUN KICS_VERSION=$(curl -s https://api.github.com/repos/Checkmarx/kics/releases | jq -r '[.[] | select(.assets | length > 2)][0].tag_name') && wget -qO /tmp/kics.tar.gz https://github.com/Checkmarx/kics/releases/download/${KICS_VERSION}/kics_${KICS_VERSION#v}_linux_amd64.tar.gz && tar -xzf /tmp/kics.tar.gz -C /usr/local/bin kics && rm /tmp/kics.tar.gz || true
