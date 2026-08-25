@@ -1,15 +1,9 @@
 FROM golang:bookworm
 
-# 1. Install required system dependencies, Python, Node.js, Ruby, Java, PHP, C/C++
+# 1. Install System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git ca-certificates curl wget unzip build-essential gcc python3 python3-pip python3-venv \
+    git ca-certificates curl wget unzip jq build-essential gcc python3 python3-pip python3-venv \
     ruby ruby-dev openjdk-17-jdk php php-cli php-xml composer \
-# 1. System packages
-RUN apt-get update && apt-get install -y \
-    curl wget git jq unzip \
-    ruby ruby-dev \
-    openjdk-17-jdk \
-    php php-cli php-xml \
     shellcheck checksec cppcheck flawfinder libssl-dev pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
