@@ -2,8 +2,8 @@ FROM golang:bookworm
 
 # 1. Install System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git ca-certificates curl wget unzip jq build-essential gcc python3 python3-pip python3-venv \
-    ruby ruby-dev openjdk-17-jdk php php-cli php-xml composer \
+    git ca-certificates curl wget unzip jq build-essential gcc python3 python3-pip python3-venv python3-dev \
+    ruby ruby-dev openjdk-17-jdk php php-cli php-xml composer nodejs npm \
     shellcheck checksec cppcheck flawfinder libssl-dev pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
