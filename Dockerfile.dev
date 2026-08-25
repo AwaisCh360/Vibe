@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0 --install-dir /usr/share/dotnet && \
     ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
-    dotnet tool install --global security-code-scan.tool && \
+    dotnet tool install --global security-scan && \
     dotnet tool install --global roslynator.dotnet.cli
 ENV PATH="/root/.dotnet/tools:${PATH}"
 
