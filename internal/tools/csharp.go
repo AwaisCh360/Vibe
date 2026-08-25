@@ -10,7 +10,9 @@ import (
 
 // RunSecurityCodeScan runs the Roslyn-based C# security scanner.
 func RunSecurityCodeScan(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "dotnet-scs", "--project", dirPath, "--export-sarif-file", "/dev/stdout")
+	// Execute the Security Code Scan using the global tool
+	cmd := exec.CommandContext(ctx, "security-scan", "--project", dirPath, "--export-sarif-file", "/dev/stdout")
+	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("security code scan error: %w", err)
