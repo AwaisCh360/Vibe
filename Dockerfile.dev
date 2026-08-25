@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Install .NET SDK for C# analyzers
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0 --install-dir /usr/share/dotnet && \
     ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
     dotnet tool install --global security-code-scan.tool && \
