@@ -46,8 +46,7 @@ RUN pip3 install --no-cache-dir --break-system-packages checkov || true
 RUN npm install -g eslint@latest jscpd@latest @cyclonedx/cdxgen jsfuzz || true
 
 # 5. Install Ruby tools
-# 5. Install Ruby tools
-RUN gem install brakeman bundler-audit || true
+RUN gem install bundler brakeman bundler-audit || true
 
 # 5.5 Install PMD (Java) and SwiftLint (Swift)
 RUN PMD_VERSION=$(curl -s https://api.github.com/repos/pmd/pmd/releases/latest | jq -r .tag_name | sed 's/pmd_releases\///') && \
