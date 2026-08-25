@@ -35,18 +35,28 @@ type BanditIssue struct {
 
 func RunBandit(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "bandit").Str("dir", directory).Msg("running")
-	results := RunBanditOnRepo(ctx, directory)
+	results, err := RunBanditOnRepo(ctx, directory)
+	if err != nil {
+		logger.Warn().Str("tool", "bandit").Err(err).Msg("tool execution failed")
+		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
+	}
 	categorizedResults := CategorizeBanditResults(results)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunBanditOnRepo(ctx context.Context, directory string) string {
+func RunBanditOnRepo(ctx context.Context, directory string) (string, error) {
 	cmd := exec.CommandContext(ctx, "bandit", "-r", directory, "-f", "json")
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	cmd.Run()
-	return out.String()
+	err := cmd.Run()
+	if err != nil {
+		// bandit returns exit code 1 if bugs are found. If it's a "not found" error, return it.
+		if _, ok := err.(*exec.Error); ok || (err.Error() != "exit status 1" && out.Len() == 0) {
+			return "", err
+		}
+	}
+	return out.String(), nil
 }
 
 func CategorizeBanditResults(results string) map[string][]interface{} {

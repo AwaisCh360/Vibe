@@ -19,7 +19,7 @@ RUN apk add --no-cache git
 ENV GOBIN=/go-tools
 RUN mkdir -p /go-tools
 
-RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.28.0 && \
+RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.19.0 && \
     go install golang.org/x/lint/golint@latest && \
     go install honnef.co/go/tools/cmd/staticcheck@latest && \
     go install github.com/fzipp/gocyclo/cmd/gocyclo@v0.6.0 && \

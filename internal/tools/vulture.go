@@ -22,7 +22,12 @@ func RunVulture(ctx context.Context, directory string) (map[string]interface{}, 
 
 func runVultureOnRepo(ctx context.Context, directory string) (string, error) {
 	cmd := exec.CommandContext(ctx, "vulture", directory)
-	output, _ := cmd.Output()
+	output, err := cmd.Output()
+	if err != nil {
+		if _, ok := err.(*exec.Error); ok || (err.Error() != "exit status 1" && len(output) == 0) {
+			return "", err
+		}
+	}
 	return string(output), nil
 }
 

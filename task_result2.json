@@ -1,0 +1,25 @@
+{
+  "data": {
+    "dead_code": [],
+    "duplicate_code": [],
+    "infra_security": [],
+    "sca": [],
+    "scan_errors": [
+      {
+        "message": "exec: \"vulture\": executable file not found in $PATH",
+        "tool": "vulture"
+      },
+      {
+        "message": "exec: \"jscpd\": executable file not found in $PATH",
+        "tool": "jscpd"
+      },
+      {
+        "message": "exec: \"checkov\": executable file not found in $PATH",
+        "tool": "checkov"
+      }
+    ],
+    "secret_detection": []
+  },
+  "status": "success",
+  "task_id": "6e3754c4-c11a-4289-8933-a0ec5173cb94"
+}

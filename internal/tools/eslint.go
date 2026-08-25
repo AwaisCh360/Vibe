@@ -83,15 +83,30 @@ func RunESLintAdvancedOnRepo(ctx context.Context, repoPath string) (map[string][
 		logger.Debug().Str("tool", "eslint-deadcode").Err(err).Msg("non-zero exit (may still have results)")
 	}
 
+	// Handle empty output gracefully - eslint may produce no output for some repos
+	trimmed := bytes.TrimSpace(output)
+	if len(trimmed) == 0 {
+		logger.Debug().Str("tool", "eslint-deadcode").Msg("empty output from eslint, returning empty results")
+		return categorizedResults, nil
+	}
+
 	var eslintOutput []map[string]interface{}
-	if err := json.Unmarshal(output, &eslintOutput); err != nil {
-		return nil, err
+	if err := json.Unmarshal(trimmed, &eslintOutput); err != nil {
+		logger.Warn().Str("tool", "eslint-deadcode").Err(err).Str("output", string(trimmed[:min(len(trimmed), 200)])).Msg("failed to parse eslint JSON output, returning empty results")
+		return categorizedResults, nil
 	}
 
 	categorized := CategorizeESLintAdvancedResults(eslintOutput, repoPath)
 	categorizedResults[utils.DEAD_CODE] = categorized[utils.DEAD_CODE]
 
 	return categorizedResults, nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func CategorizeESLintAdvancedResults(eslintResults []map[string]interface{}, directory string) map[string][]interface{} {
@@ -156,10 +171,15 @@ func RunESLint(ctx context.Context, directory, configFile string) ([]map[string]
 		logger.Debug().Str("tool", "eslint").Str("config", configFile).Err(err).Msg("non-zero exit (may still have results)")
 	}
 	var results []map[string]interface{}
-	err = json.Unmarshal(stdout.Bytes(), &results)
+	stdout_bytes := bytes.TrimSpace(stdout.Bytes())
+	if len(stdout_bytes) == 0 {
+		logger.Debug().Str("tool", "eslint").Str("config", configFile).Msg("empty output from eslint")
+		return results, nil
+	}
+	err = json.Unmarshal(stdout_bytes, &results)
 	if err != nil {
 		logger.Error().Str("tool", "eslint").Str("config", configFile).Err(err).Msg("failed to parse results")
-		return nil, err
+		return results, nil
 	}
 
 	return results, nil

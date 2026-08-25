@@ -22,7 +22,7 @@ func RunOSVScanner(ctx context.Context, directory string) (map[string]interface{
 }
 
 func runOSVScannerOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "osv-scanner", "--format", "json", directory)
+	cmd := exec.CommandContext(ctx, "osv-scanner", "scan", "-r", "--format", "json", "--call-analysis", "all", directory)
 	output, err := cmd.Output()
 	if err != nil {
 		// osv-scanner exits non-zero when vulnerabilities are found

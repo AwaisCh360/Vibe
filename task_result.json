@@ -1,0 +1,17 @@
+{
+  "data": {
+    "dead_code": [],
+    "duplicate_code": [],
+    "infra_security": [],
+    "sca": [],
+    "scan_errors": [
+      {
+        "message": "exec: \"jscpd\": executable file not found in $PATH",
+        "tool": "jscpd"
+      }
+    ],
+    "secret_detection": []
+  },
+  "status": "success",
+  "task_id": "43acfcd3-9fdf-4173-bc13-4d27c7f9e9a1"
+}

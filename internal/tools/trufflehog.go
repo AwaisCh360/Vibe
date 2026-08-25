@@ -38,7 +38,7 @@ func runTrufflehogOnRepo(ctx context.Context, directory string) (string, error) 
 	}
 	defer unsetGitSafeDirectory(ctx, directory)
 
-	cmd := exec.CommandContext(ctx, "trufflehog3", "--no-entropy", "--format", "JSON", directory)
+	cmd := exec.CommandContext(ctx, "trufflehog3", "--no-entropy", "--json", directory)
 	output, _ := cmd.CombinedOutput()
 	return string(output), nil
 }

@@ -24,10 +24,12 @@ func RunSemgrep(ctx context.Context, directory string, rules string) (map[string
 }
 
 func runSemgrepOnRepo(ctx context.Context, directory string, rules string) (string, error) {
-	cmd := exec.CommandContext(ctx, "semgrep", rules, directory, "--json")
+	cmd := exec.CommandContext(ctx, "semgrep", "--config=auto", "--config=p/security-audit", directory, "--json")
 	output, err := cmd.Output()
 	if err != nil {
-		// semgrep exits non-zero when it finds issues; treat stdout as valid output
+		if _, ok := err.(*exec.Error); ok || (err.Error() != "exit status 1" && len(output) == 0) {
+			return "", err
+		}
 		logger.Debug().Str("tool", "semgrep").Err(err).Msg("non-zero exit (may still have results)")
 	}
 	return string(output), nil

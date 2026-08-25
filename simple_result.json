@@ -1,0 +1,10 @@
+{
+  "data": {
+    "antipatterns_bugs": [],
+    "complex_functions": [],
+    "dockstring_absent": [],
+    "security_issues": []
+  },
+  "status": "success",
+  "task_id": "944efb90-6aed-4217-8e9e-35afc59fe35d"
+}

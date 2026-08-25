@@ -1,0 +1,79 @@
+FROM golang:bookworm
+
+# 1. Install required system dependencies, Python, Node.js, Ruby, Java, PHP, C/C++
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git ca-certificates curl wget unzip build-essential gcc python3 python3-pip python3-venv \
+    ruby ruby-dev openjdk-17-jdk php php-cli php-xml composer \
+# 1. System packages
+RUN apt-get update && apt-get install -y \
+    curl wget git jq unzip \
+    ruby ruby-dev \
+    openjdk-17-jdk \
+    php php-cli php-xml \
+    shellcheck checksec cppcheck flawfinder libssl-dev pkg-config && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# 2. Go security tools
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest && \
+    go install honnef.co/go/tools/cmd/staticcheck@latest && \
+    go install github.com/kisielk/errcheck@latest && \
+    go install github.com/gordonklaus/ineffassign@latest && \
+    go install github.com/jgautheron/goconst/cmd/goconst@latest && \
+    go install github.com/zricethezav/gitleaks/v8@latest && \
+    go install github.com/aquasecurity/tfsec/cmd/tfsec@latest
+
+# 3. Python Tools
+# Pip configuration for reliability during massive installs
+ENV PIP_DEFAULT_TIMEOUT=1000
+RUN pip3 install --no-cache-dir --break-system-packages pydocstyle radon pylint vulture pip-audit bandit trufflehog3 || true
+# Install heavier tools sequentially to avoid memory spikes and freezes
+RUN pip3 install --no-cache-dir --break-system-packages semgrep || true
+RUN pip3 install --no-cache-dir --break-system-packages slither-analyzer || true
+RUN pip3 install --no-cache-dir --break-system-packages mythril || true
+RUN pip3 install --no-cache-dir --break-system-packages checkov || true
+
+# 4. Install Node.js security tools (including SBOM)
+RUN npm install -g eslint@10.9.0 jscpd@5.0.16 @cyclonedx/cdxgen jsfuzz || true
+
+# 5. Install Ruby tools
+RUN gem install brakeman bundler-audit || true
+
+# 6. Install PHP tools
+RUN composer global require "squizlabs/php_codesniffer=*" "vimeo/psalm" || true
+ENV PATH="/root/.composer/vendor/bin:${PATH}"
+
+# 7. Install Rust and Rust tools
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup component add clippy && \
+    cargo install cargo-audit cargo-geiger || true
+
+# 8. Install Cloud / Standalone Binaries
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.74.0 && \
+    curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin && \
+    wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 && chmod +x /usr/local/bin/hadolint && \
+    curl -sSfL https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz | tar -xz -C /usr/local/bin && \
+    wget -qO /usr/local/bin/kube-score https://github.com/zegl/kube-score/releases/latest/download/kube-score_linux_amd64 && chmod +x /usr/local/bin/kube-score && \
+    wget -qO /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 && chmod +x /usr/local/bin/local-php-security-checker && \
+    wget -qO /tmp/terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v1.19.9/terrascan_1.19.9_Linux_x86_64.tar.gz && tar -xzf /tmp/terrascan.tar.gz -C /usr/local/bin terrascan && rm /tmp/terrascan.tar.gz && \
+    wget -qO /tmp/kics.tar.gz https://github.com/Checkmarx/kics/releases/download/v2.1.20/kics_2.1.20_linux_amd64.tar.gz && tar -xzf /tmp/kics.tar.gz -C /usr/local/bin kics && rm /tmp/kics.tar.gz && \
+    wget -qO /tmp/spotbugs.zip https://github.com/spotbugs/spotbugs/releases/download/4.10.4/spotbugs-4.10.4.zip && unzip -q /tmp/spotbugs.zip -d /opt/ && ln -s /opt/spotbugs-4.10.4/bin/spotbugs /usr/local/bin/spotbugs && rm /tmp/spotbugs.zip || true
+
+# 9. Install Dependency-Check
+RUN VERSION=$(curl -s https://api.github.com/repos/jeremylong/DependencyCheck/releases/latest | jq -r .tag_name | sed 's/v//') && \
+    wget -q "https://github.com/jeremylong/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}-release.zip" && \
+    unzip -q dependency-check-*.zip -d /opt/ && \
+    rm dependency-check-*.zip && \
+    ln -s /opt/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check || true
+
+# 10. Install Air for hot-reloading
+RUN go install github.com/air-verse/air@latest
+
+WORKDIR /app
+ENV ARMUR_REPOS_DIR=/app/repos
+RUN mkdir -p /app/repos
+
+CMD ["air", "-c", ".air.toml"]
