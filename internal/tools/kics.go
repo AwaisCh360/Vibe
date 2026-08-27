@@ -33,7 +33,11 @@ func RunKICS(ctx context.Context, directory string, options map[string]interface
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return nil, fmt.Errorf("tool execution failed: %w", err)
+		}
+	}
 
 	reportPath := filepath.Join(outDir, "results.json")
 	data, err := os.ReadFile(reportPath)

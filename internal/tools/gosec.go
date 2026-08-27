@@ -55,7 +55,11 @@ func RunGosecOnRepo(ctx context.Context, directory string, options map[string]in
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return "", fmt.Errorf("tool execution failed: %w", err)
+		}
+	}
 	logger.Debug().Str("tool", "gosec").Int("output_bytes", stdout.Len()).Msg("raw output received")
 	return stdout.String(), nil
 }

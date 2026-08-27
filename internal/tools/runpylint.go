@@ -25,7 +25,11 @@ func RunPylintOnRepo(ctx context.Context, directory string, options map[string]i
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return ""
+		}
+	}
 
 	return out.String()
 }

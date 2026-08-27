@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"context"
 
 	"armur-codescanner/internal/logger"
@@ -20,7 +21,11 @@ func RunTfsec(ctx context.Context, directory string, options map[string]interfac
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return nil, fmt.Errorf("tool execution failed: %w", err)
+		}
+	}
 
 	output := stdout.String()
 	if strings.TrimSpace(output) == "" {

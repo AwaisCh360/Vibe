@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"context"
 
 	"armur-codescanner/internal/logger"
@@ -53,7 +54,11 @@ func RunStaticcheckOnRepo(ctx context.Context, directory string, options map[str
 	cmd.Stdout = &out
 	cmd.Stderr = &out
 
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return "", fmt.Errorf("tool execution failed: %w", err)
+		}
+	}
 	return strings.TrimSpace(out.String()), nil
 }
 

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"context"
 
 	"armur-codescanner/internal/logger"
@@ -12,7 +13,7 @@ import (
 )
 
 // RunPMD runs PMD static analysis on a Java/Kotlin project directory.
-func RunPMD(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunPMD(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "pmd").Str("dir", directory).Msg("running")
 
 	args := ApplyOptions([]string{"check",
@@ -26,7 +27,11 @@ func RunPMD(ctx context.Context, directory string) (map[string]interface{}, erro
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return nil, fmt.Errorf("tool execution failed: %w", err)
+		}
+	}
 
 	output := stdout.String()
 	if strings.TrimSpace(output) == "" {

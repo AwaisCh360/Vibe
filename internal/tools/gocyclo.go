@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"context"
 
 	"armur-codescanner/internal/logger"
@@ -28,7 +29,11 @@ func RunGoCycloOnRepo(ctx context.Context, directory string, options map[string]
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); !ok {
+			return "", fmt.Errorf("tool execution failed: %w", err)
+		}
+	}
 	return out.String(), nil
 }
 
