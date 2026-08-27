@@ -142,8 +142,20 @@ func GetToolScanStatus(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	var history models.ScanHistory
-	if err := db.GetDB().Where("task_id = ? AND scan_type = 'single_tool' AND categories::jsonb ? ?", taskID, toolName).First(&history).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Tool scan not found or tool mismatch"})
+	if err := db.GetDB().Where("task_id = ? AND scan_type = 'single_tool'", taskID).First(&history).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tool scan not found"})
+		return
+	}
+
+	found := false
+	for _, c := range history.Categories {
+		if c == toolName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tool mismatch"})
 		return
 	}
 
@@ -157,8 +169,20 @@ func GetToolScanReport(c *gin.Context) {
 
 	// Same authorization and existence check
 	var history models.ScanHistory
-	if err := db.GetDB().Where("task_id = ? AND scan_type = 'single_tool' AND categories::jsonb ? ?", taskID, toolName).First(&history).Error; err != nil {
+	if err := db.GetDB().Where("task_id = ? AND scan_type = 'single_tool'", taskID).First(&history).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Tool scan not found"})
+		return
+	}
+
+	found := false
+	for _, c := range history.Categories {
+		if c == toolName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tool mismatch"})
 		return
 	}
 
