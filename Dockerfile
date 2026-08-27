@@ -19,12 +19,16 @@ RUN apk add --no-cache git
 ENV GOBIN=/go-tools
 RUN mkdir -p /go-tools
 
-RUN go install github.com/securego/gosec/v2/cmd/gosec@latest && \
-    go install golang.org/x/lint/golint@latest && \
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest && \
     go install honnef.co/go/tools/cmd/staticcheck@latest && \
+    go install github.com/securego/gosec/v2/cmd/gosec@latest && \
     go install github.com/fzipp/gocyclo/cmd/gocyclo@latest && \
     go install golang.org/x/tools/cmd/deadcode@latest && \
-    go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+    go install golang.org/x/lint/golint@latest && \
+    go install github.com/google/osv-scanner/cmd/osv-scanner@latest && \
+    go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest && \
+    go install github.com/zricethezav/gitleaks/v8@latest && \
+    go clean -cache -modcache
 
 # ============================================================
 # Stage 3: Python security tools
@@ -103,9 +107,9 @@ CMD ["/usr/local/bin/armur-server"]
 FROM python:3.12-slim AS armur-full
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git ca-certificates curl build-essential gcc \
-    default-jre ruby php-cli composer cppcheck flawfinder golang-go cargo wget unzip \
-    python3-dev pkg-config libssl-dev libffi-dev \
+    git ca-certificates curl build-essential gcc wget unzip jq \
+    default-jre ruby php-cli php-xml composer cppcheck flawfinder golang-go \
+    shellcheck checksec libssl-dev pkg-config python3-dev libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js
@@ -131,6 +135,20 @@ RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/
     chmod +x /usr/local/bin/hadolint && \
     curl -sLo /usr/local/bin/tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.1/tfsec-linux-amd64 && \
     chmod +x /usr/local/bin/tfsec
+
+# Install Ruby tools
+RUN gem install bundler brakeman bundler-audit || true
+
+# Install PHP tools
+RUN composer global require "squizlabs/php_codesniffer=*" "vimeo/psalm" || true
+ENV PATH="/root/.composer/vendor/bin:${PATH}"
+
+# Install Rust and Rust tools
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup component add clippy && \
+    cargo install cargo-audit cargo-geiger || true && \
+    rm -rf /root/.cargo/registry /root/.cargo/git
 
 # Node tools
 RUN npm install -g eslint@10.9.0 jscpd@5.0.16 @cyclonedx/cdxgen

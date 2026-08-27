@@ -241,7 +241,9 @@ func CategorizeESLintResults(results []map[string]interface{}, directory string)
 				"ruleId":  ruleID,
 			}
 
-			if antipatternsRuleIDs[ruleID] {
+			if strings.HasPrefix(ruleID, "security/") {
+				categorized[SECURITY_ISSUES] = append(categorized[SECURITY_ISSUES], issue)
+			} else if antipatternsRuleIDs[ruleID] {
 				categorized[ANTIPATTERNS_BUGS] = append(categorized[ANTIPATTERNS_BUGS], issue)
 			} else if ruleID == "complexity" {
 				categorized[COMPLEX_FUNCTIONS] = append(categorized[COMPLEX_FUNCTIONS], issue)

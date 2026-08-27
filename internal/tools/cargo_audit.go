@@ -23,9 +23,13 @@ func RunCargoAudit(ctx context.Context, directory string, options map[string]int
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Run() // cargo-audit exits non-zero when vulnerabilities found — ignore exit code
+	err := cmd.Run() // cargo-audit exits non-zero when vulnerabilities found
 
 	output := stdout.String()
+	if err != nil && strings.TrimSpace(output) == "" {
+		return nil, fmt.Errorf("cargo-audit execution failed: %v, stderr: %s", err, stderr.String())
+	}
+
 	if strings.TrimSpace(output) == "" {
 		logger.Debug().Str("tool", "cargo-audit").Msg("no output")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), nil

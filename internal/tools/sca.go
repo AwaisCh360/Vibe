@@ -111,8 +111,11 @@ func RunPipAudit(ctx context.Context, dirPath string, options map[string]interfa
 	cmd.Dir = dirPath
 	out, err := cmd.Output()
 	if err != nil {
-		// pip-audit may not be installed
-		return nil, fmt.Errorf("pip-audit not available: %w", err)
+		// pip-audit exits with non-zero when vulnerabilities are found.
+		// If out is empty, it's a real error (e.g., missing binary).
+		if len(out) == 0 {
+			return nil, fmt.Errorf("pip-audit not available or execution failed: %w", err)
+		}
 	}
 
 	var vulns []map[string]interface{}

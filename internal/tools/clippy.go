@@ -24,13 +24,13 @@ func RunClippy(ctx context.Context, directory string, options map[string]interfa
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		if _, ok := err.(*exec.ExitError); !ok {
-			return nil, fmt.Errorf("tool execution failed: %w", err)
-		}
-	}
+	err := cmd.Run() // clippy exits non-zero when vulnerabilities found
 
 	output := stdout.String()
+	if err != nil && strings.TrimSpace(output) == "" {
+		return nil, fmt.Errorf("clippy execution failed: %v, stderr: %s", err, stderr.String())
+	}
+
 	if strings.TrimSpace(output) == "" {
 		logger.Debug().Str("tool", "clippy").Msg("no output")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), nil

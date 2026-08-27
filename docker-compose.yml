@@ -13,10 +13,12 @@ services:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
       - APP_PORT=${APP_PORT}
+      - DB_HOST=postgres_service
     env_file:
       - .env
     depends_on:
       - redis_service
+      - postgres_service
 
   redis_service:
     image: "redis:alpine"
@@ -33,8 +35,21 @@ services:
       - ./shared_tmp:/armur/repos
     environment:
       - REDIS_ADDR=redis_service:6379
+      - DB_HOST=postgres_service
     env_file:
       - .env
     depends_on:
       - redis_service
+      - postgres_service
     command: ["/usr/local/bin/armur-server"]
+
+  postgres_service:
+    image: postgres:15-alpine
+    container_name: postgres_service
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: armur
+    ports:
+      - "5432:5432"

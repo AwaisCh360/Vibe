@@ -23,13 +23,13 @@ func RunCargoGeiger(ctx context.Context, directory string, options map[string]in
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		if _, ok := err.(*exec.ExitError); !ok {
-			return nil, fmt.Errorf("tool execution failed: %w", err)
-		}
-	}
+	err := cmd.Run() // cargo-geiger might exit non-zero
 
 	output := stdout.String()
+	if err != nil && strings.TrimSpace(output) == "" {
+		return nil, fmt.Errorf("cargo-geiger execution failed: %v, stderr: %s", err, stderr.String())
+	}
+
 	if strings.TrimSpace(output) == "" {
 		logger.Debug().Str("tool", "cargo-geiger").Msg("no output")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), nil
