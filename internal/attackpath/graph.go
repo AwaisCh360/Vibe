@@ -195,10 +195,10 @@ func buildPathFromRule(rule ChainRule, findings []models.Finding) pathBuild {
 
 	prevID := entryID
 	for _, f := range findings {
-		vulnID := nodeID("vuln", f.ID)
+		vulnID := nodeID("vuln", fmt.Sprintf("%d", f.ID))
 		nodes = append(nodes, AttackNode{
 			ID:        vulnID,
-			FindingID: f.ID,
+			FindingID: fmt.Sprintf("%d", f.ID),
 			Type:      "vulnerability",
 			Label:     fmt.Sprintf("%s (%s:%d)", f.CWE, f.File, f.Line),
 			Severity:  string(f.Severity),
@@ -268,7 +268,7 @@ func scorePath(rule ChainRule, findings []models.Finding) float64 {
 	// Confirmed findings boost score
 	confirmFactor := 1.0
 	for _, f := range findings {
-		if f.Confirmed {
+		if f.Status == "confirmed" {
 			confirmFactor = 2.0
 			break
 		}

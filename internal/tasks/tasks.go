@@ -424,7 +424,7 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 				return toolResult{"spotbugs", r, err}
 			}),
 			withTimeout("pmd", func(ctx context.Context) toolResult {
-				r, err := tools.RunPMD(ctx, dirPath)
+				r, err := tools.RunPMD(ctx, dirPath, nil)
 				return toolResult{"pmd", r, err}
 			}),
 			withTimeout("dependency-check", func(ctx context.Context) toolResult {

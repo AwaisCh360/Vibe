@@ -58,7 +58,7 @@ func TestCategorizeSpotBugsResults_WithBug(t *testing.T) {
 // --- PMD ---
 
 func TestRunPMD_EmptyDir(t *testing.T) {
-	result, err := RunPMD(context.Background(), t.TempDir())
+	result, err := RunPMD(context.Background(), t.TempDir(), nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
