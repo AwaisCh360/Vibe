@@ -41,7 +41,7 @@ func ConvertFromLegacy(results map[string]interface{}) []Finding {
 					Severity: normalizeSev(getString(m, "severity")),
 					Message:  getString(m, "message"),
 				}
-				f.ComputeID()
+				f.ComputeFingerprint()
 				findings = append(findings, f)
 			}
 
@@ -75,7 +75,7 @@ func ConvertFromLegacy(results map[string]interface{}) []Finding {
 							Severity: normalizeSev(getString(nd, "severity")),
 							Message:  getString(nd, "message"),
 						}
-						f.ComputeID()
+						f.ComputeFingerprint()
 						findings = append(findings, f)
 					}
 				}

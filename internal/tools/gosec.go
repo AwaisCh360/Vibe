@@ -36,9 +36,9 @@ func GetPracticesFromJSON(data []CWEData, language string, cwe string) map[strin
 	return map[string]string{}
 }
 
-func RunGosec(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunGosec(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "gosec").Str("dir", directory).Msg("running")
-	results, err := RunGosecOnRepo(ctx, directory)
+	results, err := RunGosecOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "gosec").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -47,8 +47,9 @@ func RunGosec(ctx context.Context, directory string) (map[string]interface{}, er
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunGosecOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "gosec", "-fmt=json", "./...")
+func RunGosecOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{"-fmt=json", "./..."}, options)
+	cmd := exec.CommandContext(ctx, "gosec", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

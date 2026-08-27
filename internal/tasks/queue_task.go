@@ -52,3 +52,69 @@ func EnqueueScanTask(scanType, repoURL, language string, opts ...ScanOptions) (s
 
 	return taskID, nil
 }
+
+// EnqueueScanTaskV2 enqueues a scan task with categories for the SaaS API.
+func EnqueueScanTaskV2(scanType, repoURL string, categories []string, opts ...ScanOptions) (string, error) {
+	taskID := uuid.New().String()
+
+	payload := map[string]interface{}{
+		"repository_url": repoURL,
+		"scan_type":      scanType, // "quick", "full", "custom"
+		"categories":     categories,
+		"task_id":        taskID,
+	}
+
+	if len(opts) > 0 {
+		if opts[0].WebhookURL != "" {
+			payload["webhook_url"] = opts[0].WebhookURL
+		}
+		if opts[0].WebhookSecret != "" {
+			payload["webhook_secret"] = opts[0].WebhookSecret
+		}
+	}
+
+	taskPayload, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+
+	client := asynq.NewClient(redis.RedisClientOptions())
+	defer client.Close()
+
+	task := asynq.NewTask("scan:repo:v2", taskPayload)
+	_, err = client.Enqueue(task, asynq.Queue("default"), asynq.MaxRetry(3), asynq.Timeout(120*time.Minute))
+	if err != nil {
+		return "", err
+	}
+
+	return taskID, nil
+}
+
+// EnqueueSingleToolTask enqueues a scan task for exactly one tool.
+func EnqueueSingleToolTask(toolName, repoURL string, options map[string]interface{}) (string, error) {
+	taskID := uuid.New().String()
+
+	payload := map[string]interface{}{
+		"repository_url": repoURL,
+		"scan_type":      "single_tool",
+		"task_id":        taskID,
+		"categories":     []string{toolName},
+		"options":        options,
+	}
+
+	taskPayload, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+
+	client := asynq.NewClient(redis.RedisClientOptions())
+	defer client.Close()
+
+	task := asynq.NewTask("scan:repo:v2", taskPayload)
+	_, err = client.Enqueue(task, asynq.Queue("default"), asynq.MaxRetry(3), asynq.Timeout(120*time.Minute))
+	if err != nil {
+		return "", err
+	}
+
+	return taskID, nil
+}

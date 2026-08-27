@@ -13,10 +13,11 @@ import (
 )
 
 // RunBundlerAudit runs bundler-audit on a Ruby project to check for gem vulnerabilities.
-func RunBundlerAudit(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunBundlerAudit(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "bundler-audit").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "bundle", "audit", "check", "--update")
+	args := ApplyOptions([]string{"audit", "check", "--update"}, options)
+	cmd := exec.CommandContext(ctx, "bundle", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

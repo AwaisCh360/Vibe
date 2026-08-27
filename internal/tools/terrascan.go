@@ -9,8 +9,9 @@ import (
 )
 
 // RunTerrascan runs the multi-cloud IaC security scanner.
-func RunTerrascan(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "terrascan", "scan", "-i", "terraform", "-d", dirPath, "-o", "json")
+func RunTerrascan(ctx context.Context, dirPath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"scan", "-i", "terraform", "-d", dirPath, "-o", "json"}, options)
+	cmd := exec.CommandContext(ctx, "terrascan", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
@@ -74,7 +75,8 @@ func mapTerrascanSeverity(sev string) string {
 
 // RunKubesec runs kubesec risk scoring on Kubernetes manifests.
 func RunKubesec(ctx context.Context, filePath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "kubesec", "scan", filePath)
+	args := ApplyOptions([]string{"scan", filePath}, nil)
+	cmd := exec.CommandContext(ctx, "kubesec", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("kubesec error: %w", err)

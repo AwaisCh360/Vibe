@@ -46,7 +46,8 @@ func CheckOutdatedDeps(ctx context.Context, dirPath string) ([]DepUpdateResult, 
 }
 
 func checkGoOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
-	cmd := exec.CommandContext(ctx, "go", "list", "-u", "-m", "-json", "all")
+	args := ApplyOptions([]string{"list", "-u", "-m", "-json", "all"}, nil)
+	cmd := exec.CommandContext(ctx, "go", args...)
 	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {
@@ -82,7 +83,8 @@ func checkGoOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
 }
 
 func checkNpmOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
-	cmd := exec.CommandContext(ctx, "npm", "outdated", "--json")
+	args := ApplyOptions([]string{"outdated", "--json"}, nil)
+	cmd := exec.CommandContext(ctx, "npm", args...)
 	cmd.Dir = dirPath
 	output, _ := cmd.Output() // exits non-zero when outdated packages found
 
@@ -109,7 +111,8 @@ func checkNpmOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
 }
 
 func checkPipOutdated(ctx context.Context, dirPath string) []DepUpdateResult {
-	cmd := exec.CommandContext(ctx, "pip", "list", "--outdated", "--format=json")
+	args := ApplyOptions([]string{"list", "--outdated", "--format=json"}, nil)
+	cmd := exec.CommandContext(ctx, "pip", args...)
 	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {

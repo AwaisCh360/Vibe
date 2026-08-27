@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-func RunGocyclo(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunGocyclo(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "gocyclo").Str("dir", directory).Msg("running")
-	gocycloResults, err := RunGoCycloOnRepo(ctx, directory)
+	gocycloResults, err := RunGoCycloOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "gocyclo").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -21,8 +21,9 @@ func RunGocyclo(ctx context.Context, directory string) (map[string]interface{}, 
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunGoCycloOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "gocyclo", directory)
+func RunGoCycloOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{directory}, options)
+	cmd := exec.CommandContext(ctx, "gocyclo", args...)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out

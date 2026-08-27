@@ -15,7 +15,7 @@ import (
 )
 
 // RunDependencyCheck runs OWASP Dependency-Check on a Java project directory.
-func RunDependencyCheck(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunDependencyCheck(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "dependency-check").Str("dir", directory).Msg("running")
 
 	// Dependency-Check writes a JSON report to a temp output dir.
@@ -25,13 +25,12 @@ func RunDependencyCheck(ctx context.Context, directory string) (map[string]inter
 	}
 	defer os.RemoveAll(outDir)
 
-	cmd := exec.CommandContext(ctx, "dependency-check",
-		"--scan", directory,
+	args := ApplyOptions([]string{"--scan", directory,
 		"--format", "JSON",
 		"--out", outDir,
 		"--project", "armur-scan",
-		"--noupdate",
-	)
+		"--noupdate",}, options)
+	cmd := exec.CommandContext(ctx, "dependency-check", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

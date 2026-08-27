@@ -11,15 +11,16 @@ import (
 	"strings"
 )
 
-func RunPylint(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunPylint(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "pylint").Str("dir", directory).Msg("running")
-	pylintOutput := RunPylintOnRepo(ctx, directory)
+	pylintOutput := RunPylintOnRepo(ctx, directory, options)
 	categorizedResults := CategorizePylintResults(pylintOutput, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunPylintOnRepo(ctx context.Context, directory string) string {
-	cmd := exec.CommandContext(ctx, "pylint", "--recursive=y", directory, "-f", "json")
+func RunPylintOnRepo(ctx context.Context, directory string, options map[string]interface{}) string {
+	args := ApplyOptions([]string{"--recursive=y", directory, "-f", "json"}, options)
+	cmd := exec.CommandContext(ctx, "pylint", args...)
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

@@ -1,0 +1,252 @@
+{
+    "shellcheck": {
+        "status": "WORKING",
+        "stdout": "ShellCheck - shell script analysis tool\nversion: 0.9.0\nlicense: GNU General Public License, version 3\nwebsite: https://www.shellcheck.net\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "checksec": {
+        "status": "WORKING",
+        "stdout": "checksec v2.6.0, Brian Davis, github.com/slimm609/checksec.sh, Dec 2015\nBased off checksec v1.5, Tobias Klein, www.trapkit.de, November 2011\n\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "cppcheck": {
+        "status": "WORKING",
+        "stdout": "Cppcheck 2.10\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "flawfinder": {
+        "status": "WORKING",
+        "stdout": "2.0.19\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "govulncheck": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "govulncheck: no go.mod file\n\ngovulncheck only works with Go modules. Try navigating to your module directory.\nOtherwise, run go mod init to make your project a module.\n\nSee https://go.dev/doc/modules/managing-dependencies for more information.\n",
+        "exit_code": 1
+    },
+    "staticcheck": {
+        "status": "WORKING",
+        "stdout": "-: pattern ./...: directory prefix . does not contain main module or its selected dependencies (compile)\n",
+        "stderr": "",
+        "exit_code": 1
+    },
+    "errcheck": {
+        "status": "BROKEN",
+        "error": "Command not found in docker"
+    },
+    "ineffassign": {
+        "status": "BROKEN",
+        "error": "Command not found in docker"
+    },
+    "goconst": {
+        "status": "BROKEN",
+        "error": "Command not found in docker"
+    },
+    "gitleaks": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "\n    \u25cb\n    \u2502\u2572\n    \u2502 \u25cb\n    \u25cb \u2591\n    \u2591    gitleaks\n\n\u001b[90m7:38AM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mscanned ~275 bytes (275 bytes) in 87.1ms\u001b[0m\n\u001b[90m7:38AM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mno leaks found\u001b[0m\n",
+        "exit_code": 0
+    },
+    "tfsec": {
+        "status": "WORKING",
+        "stdout": "\u001b[0m  \u001b[1mtimings\u001b[0m\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u001b[0m\u001b[0m  \u001b[2mdisk i/o            \u001b[0m 0s\n\u001b[0m\u001b[0m  \u001b[2mparsing             \u001b[0m 0s\n\u001b[0m\u001b[0m  \u001b[2madaptation          \u001b[0m 0s\n\u001b[0m\u001b[0m  \u001b[2mchecks              \u001b[0m 0s\n\u001b[0m\u001b[0m  \u001b[2mtotal               \u001b[0m 0s\n\u001b[0m\n\u001b[0m  \u001b[1mcounts\u001b[0m\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u001b[0m\u001b[0m  \u001b[2mmodules downloaded  \u001b[0m 0\n\u001b[0m\u001b[0m  \u001b[2mmodules processed   \u001b[0m 0\n\u001b[0m\u001b[0m  \u001b[2mblocks processed    \u001b[0m 0\n\u001b[0m\u001b[0m  \u001b[2mfiles read     ",
+        "stderr": "\n======================================================\ntfsec is joining the Trivy family\n\ntfsec will continue to remain available \nfor the time being, although our engineering \nattention will be directed at Trivy going forward.\n\nYou can read more here: \nhttps://github.com/aquasecurity/tfsec/discussions/1994\n======================================================\n",
+        "exit_code": 0
+    },
+    "pydocstyle": {
+        "status": "WORKING",
+        "stdout": "./app.py:1 at module level:\n        D100: Missing docstring in public module\n",
+        "stderr": "",
+        "exit_code": 1
+    },
+    "radon": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "pylint": {
+        "status": "WORKING",
+        "stdout": "************* Module app\napp.py:1:0: C0114: Missing module docstring (missing-module-docstring)\napp.py:2:0: W0122: Use of exec (exec-used)\n\n-----------------------------------\nYour code has been rated at 0.00/10\n\n",
+        "stderr": "",
+        "exit_code": 20
+    },
+    "vulture": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "pip-audit": {
+        "status": "WORKING",
+        "stdout": "usage: pip-audit [-h] [-V] [-l] [-r REQUIREMENT] [--locked] [-f FORMAT]\n                 [-s SERVICE] [--osv-url OSV_URL] [-d] [-S]\n                 [--desc [{on,off,auto}]] [--aliases [{on,off,auto}]]\n                 [--cache-dir CACHE_DIR] [--progress-spinner {on,off}]\n                 [--timeout TIMEOUT] [--path PATH] [-v] [--fix]\n                 [--require-hashes] [--index-url INDEX_URL]\n                 [--extra-index-url URL] [--skip-editable] [--no-deps]\n                 [-o FILE] [--ig",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "bandit": {
+        "status": "WORKING",
+        "stdout": "Run started:2026-08-27 07:39:00.086764+00:00\n\nTest results:\n>> Issue: [B102:exec_used] Use of exec detected.\n   Severity: Medium   Confidence: High\n   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)\n   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b102_exec_used.html\n   Location: ./app.py:2:0\n1\tprint('Hello World')\n2\texec('bad code')\n\n--------------------------------------------------\n\nCode scanned:\n\tTotal lines of code: 2\n\tTotal lines skipped (#nosec): 0\n\tTotal potentia",
+        "stderr": "[main]\tINFO\tprofile include tests: None\n[main]\tINFO\tprofile exclude tests: None\n[main]\tINFO\tcli include tests: None\n[main]\tINFO\tcli exclude tests: None\n[main]\tINFO\trunning on Python 3.11.2\n",
+        "exit_code": 1
+    },
+    "trufflehog3": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "semgrep": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "               \n               \n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 Scan Status \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n  Scanning 7 files tracked by git with 1074 Code rules:\n                                                                                                                        \n  Language      Rules   Files          Origin      Rules                                                                \n \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500        \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500                                                               \n ",
+        "exit_code": 0
+    },
+    "slither": {
+        "status": "WORKING",
+        "stdout": "usage: slither target [flag]\n\ntarget can be:\n\t- file.sol // a Solidity file\n\t- project_directory // a project directory. See https://github.com/crytic/crytic-compile/#crytic-compile for the supported platforms\n\t- 0x.. // a contract on mainnet\n\t- NETWORK:0x.. // a contract on a different network. Supported networks: mainnet,sepolia,holesky,hoodi,bsc,testnet.bsc,poly,amoy.poly,base,sepolia.base,arbi,nova.arbi,sepolia.arbi,linea,sepolia.linea,blast,sepolia.blast,optim,sepolia.optim,avax,testnet.ava",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "myth": {
+        "status": "WORKING",
+        "stdout": "usage: myth [-h] [-v LOG_LEVEL]\n            {safe-functions,analyze,a,disassemble,d,concolic,c,foundry,f,list-detectors,read-storage,function-to-hash,hash-to-address,version,help}\n            ...\n\nSecurity analysis of Ethereum smart contracts\n\npositional arguments:\n  {safe-functions,analyze,a,disassemble,d,concolic,c,foundry,f,list-detectors,read-storage,function-to-hash,hash-to-address,version,help}\n                        Commands\n    safe-functions      Check functions which are completely sa",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "checkov": {
+        "status": "WORKING",
+        "stdout": "\n\n       _               _\n   ___| |__   ___  ___| | _______   __\n  / __| '_ \\ / _ \\/ __| |/ / _ \\ \\ / /\n | (__| | | |  __/ (__|   < (_) \\ V /\n  \\___|_| |_|\\___|\\___|_|\\_\\___/ \\_/\n\nBy Prisma Cloud | version: 3.3.13 \nUpdate available 3.3.13 -> 3.3.15\nRun pip3 install -U checkov to update \n\n\n\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "eslint": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "\nOops! Something went wrong! :(\n\nESLint: 10.9.1\n\nESLint couldn't find an eslint.config.* file.\n\nFrom ESLint v9.0.0, the default configuration file is now eslint.config.*.\nIf you are using a .eslintrc.* file, please follow the migration guide\nto update your configuration file to the new format:\n\nhttps://eslint.org/docs/latest/use/configure/migration-guide\n\nIf you still have problems after following the migration guide, please stop by\nhttps://eslint.org/chat/help to chat with the team.\n\n",
+        "exit_code": 2
+    },
+    "jscpd": {
+        "status": "WORKING",
+        "stdout": "\u001b[90mNo duplicates found.\u001b[39m\n\u001b[90m\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u001b[39m\n\u001b[90m\u2502\u001b[39m\u001b[31m Format \u001b[39m\u001b[90m\u2502\u001b[39m\u001b[31m Files analyzed \u001b[39m\u001b[90m\u2502\u001b[39m\u001b[31m Total lines \u001b[39m\u001b[90m\u2502\u001b[39m\u001b[31m Total tokens \u001b[39m\u001b[90m\u2502\u001b[39m\u001b[31m Clones found \u001b[39m\u001b[90m\u2502\u001b[39m\u001b[31m Duplicated lines \u001b[39m\u001b[90m\u2502\u001b[39m\u001b[31m Duplicated tokens \u001b[39m\u001b[90m\u2502\u001b[39m\n\u001b[90m\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "cdxgen": {
+        "status": "WORKING",
+        "stdout": "+------------------------+------------+--------------------------+----------------------------------------------------+\n|                                           SECURE MODE: Environment audit                                            |\n|                                                       1 high                                                        |\n+------------------------+------------+--------------------------+----------------------------------------------------+\n| Category          ",
+        "stderr": "\u001b[1;35mNotice: Generating an SBOM without a lockfile is risky and non-deterministic. Consider generating and committing the lockfile to your repository to ensure reproducible builds and SBOMs.\u001b[0m\n",
+        "exit_code": 0
+    },
+    "jsfuzz": {
+        "status": "WORKING",
+        "stdout": "jsfuzz <target> [dir..]\n\nstart the fuzzer\n\nPositionals:\n  target  Path to file containing the fuzz target function              [string]\n  dir     Pass zero or more corpus directories as command line arguments. The\n          fuzzer will read test inputs from each of these corpus directories,\n          and any new test inputs that are generated will be written back to the\n          first corpus directory. single files can be passed as well and will be\n          used as seed files                 ",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "brakeman": {
+        "status": "WORKING",
+        "stdout": "",
+        "stderr": "Please supply the path to a Rails application (looking in /app).\n  Use `--force` to run a scan anyway.\n",
+        "exit_code": 4
+    },
+    "bundler-audit": {
+        "status": "WORKING",
+        "stdout": "Commands:\n  bundler-audit check [DIR]     # Checks the Gemfile.lock for insecure depend...\n  bundler-audit download        # Downloads ruby-advisory-db\n  bundler-audit help [COMMAND]  # Describe available commands or one specific...\n  bundler-audit stats           # Prints ruby-advisory-db stats\n  bundler-audit tree            # Print a tree of all available commands\n  bundler-audit update          # Updates the ruby-advisory-db\n  bundler-audit version         # Prints the bundler-audit version\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "phpcs": {
+        "status": "WORKING",
+        "stdout": "\nFILE: /app/script.php\n-------------------------------------------------------------------------\nFOUND 3 ERRORS AFFECTING 1 LINE\n-------------------------------------------------------------------------\n 1 | ERROR | [x] Header blocks must be separated by a single blank line\n 1 | ERROR | [x] Opening PHP tag must be on a line by itself\n 1 | ERROR | [x] A closing tag is not permitted at the end of a PHP file\n-------------------------------------------------------------------------\nPHPCBF CAN FIX TH",
+        "stderr": "Time: 226ms; Memory: 6MB\n",
+        "exit_code": 1
+    },
+    "psalm": {
+        "status": "WORKING",
+        "stdout": "Usage:\n    psalm [options] [file...]\n\nBasic configuration:\n    -c, --config=psalm.xml\n        Path to a psalm.xml configuration file. Run psalm --init to create one.\n\n    --use-ini-defaults\n        Use PHP-provided ini defaults for memory and error display\n\n    --memory-limit=LIMIT\n        Use a specific memory limit. Cannot be combined with --use-ini-defaults\n\n    --disable-extension=[extension]\n        Used to disable certain extensions while Psalm is running.\n\n    --force-jit\n        Enable J",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "cargo-clippy": {
+        "status": "WORKING",
+        "stdout": "Checks a package to catch common mistakes and improve your Rust code.\n\nUsage:\n    cargo clippy [OPTIONS] [--] [<ARGS>...]\n\nCommon options:\n    --no-deps                Run Clippy only on the given crate, without linting the dependencies\n    --fix                    Automatically apply lint suggestions. This flag implies --no-deps and --all-targets\n    -h, --help               Print this message\n    -V, --version            Print version info and exit\n    --explain [LINT]         Print the docume",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "cargo-audit": {
+        "status": "WORKING",
+        "stdout": "Audit Cargo.lock files for vulnerable crates\n\nUsage: cargo audit [OPTIONS] [COMMAND]\n\nCommands:\n  bin   scan compiled binaries\n  help  Print this message or the help of the given subcommand(s)\n\nOptions:\n  -c, --color <COLOR>\n          color configuration (default: auto)\n          \n          [possible values: always, auto, never]\n\n  -d, --db <DB>\n          advisory database git repo path (default: ~/.cargo/advisory-db)\n\n  -D, --deny <DENY>\n          exit with an error on: warnings (any), unmainta",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "cargo-geiger": {
+        "status": "WORKING",
+        "stdout": "Detects usage of unsafe Rust in a Rust crate and its dependencies.\n\nUSAGE:\n    cargo geiger [OPTIONS]\n\nOPTIONS:\n    -p, --package <SPEC>          Package to be used as the root of the tree.\n        --features <FEATURES>     Space-separated list of features to activate.\n        --all-features            Activate all available features.\n        --no-default-features     Do not activate the `default` feature.\n        --target <TARGET>         Set the target triple.\n        --all-targets            ",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "trivy": {
+        "status": "WORKING",
+        "stdout": "\nReport Summary\n\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 Target \u2502 Type \u2502 Vulnerabilities \u2502 Secrets \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502   -    \u2502  -   \u2502        -        \u2502    -    \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\nLegend:\n- '-': Not scanned\n- '0': Clean (no security findings detected)\n\n",
+        "stderr": "2026-08-27T07:40:50Z\tINFO\t[vulndb] Need to update DB\n2026-08-27T07:40:50Z\tINFO\t[vulndb] Downloading vulnerability DB...\n2026-08-27T07:40:50Z\tINFO\t[vulndb] Downloading artifact...\trepo=\"mirror.gcr.io/aquasec/trivy-db:2\"\n63.24 KiB / 109.27 MiB [>____________________________________________________________] 0.06% ? p/s ?207.24 KiB / 109.27 MiB [>___________________________________________________________] 0.19% ? p/s ?543.24 KiB / 109.27 MiB [>_______________________________________________________",
+        "exit_code": 0
+    },
+    "grype": {
+        "status": "TIMEOUT",
+        "error": "Tool took longer than 120s"
+    },
+    "hadolint": {
+        "status": "WORKING",
+        "stdout": "hadolint - Dockerfile Linter written in Haskell\n\nUsage: hadolint [-v|--version] [-c|--config FILENAME] [DOCKERFILE...] \n                [--file-path-in-report FILEPATHINREPORT] [-o|--output OUTPUT] \n                [--no-fail] [--no-color] [-V|--verbose] [-f|--format ARG] \n                [--error RULECODE] [--warning RULECODE] [--info RULECODE] \n                [--style RULECODE] [--ignore RULECODE] \n                [--trusted-registry REGISTRY (e.g. docker.io)] \n                [--require-labe",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "kube-linter": {
+        "status": "WORKING",
+        "stdout": "0.8.3\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "kube-score": {
+        "status": "WORKING",
+        "stdout": "kube-score version: 1.20.0, commit: 81371e9f53b633bec69423fc298295bd71bd869a, built: 2025-04-28T16:54:40Z\n",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "local-php-security-checker": {
+        "status": "WORKING",
+        "stdout": "Local PHP Security Checker 2.1.3, built at 2024-05-09T11:54:42Z\n\n",
+        "stderr": "Usage of local-php-security-checker:\n  -archive string\n    \tAdvisory archive URL (default \"https://codeload.github.com/FriendsOfPHP/security-advisories/zip/master\")\n  -cache-dir string\n    \tCache directory (default \"/tmp\")\n  -disable-exit-code\n    \tWhether to fail when issues are detected\n  -format string\n    \tOutput format (ansi, text, junit, markdown, json, or yaml) (default \"ansi\")\n  -help\n    \tOutput help and version\n  -local\n    \tDo not make HTTP calls (needs a valid cache file)\n  -no-dev\n ",
+        "exit_code": 0
+    },
+    "terrascan": {
+        "status": "WORKING",
+        "stdout": "\n\nScan Errors -\n\n\tIaC Type            :\tterraform\n\tDirectory           :\t/app\n\tError Message       :\tdirectory '/app' has no terraform config files\n\t\n\t-----------------------------------------------------------------------\n\t\n\n\nScan Summary -\n\n\tFile/Folder         :\t/app\n\tIaC Type            :\tterraform\n\tScanned At          :\t2026-08-27 07:43:25.921575868 +0000 UTC\n\tPolicies Validated  :\t785\n\tViolated Policies   :\t0\n\tLow                 :\t0\n\tMedium              :\t0\n\tHigh                :\t0\n\t\n\n",
+        "stderr": "",
+        "exit_code": 4
+    },
+    "kics": {
+        "status": "WORKING",
+        "stdout": "\n                                                                                                                                                   \n                                                                                                                                                                                                    \n   MLLLLLM             MLLLLLLLLL   LLLLLLL             KLLLLLLLLLLLLLLLL       LLLLLLLLLLLLLLLLLLLLLLL \n   MMMMMMM           MMMMMMMMMML    MMMMMMMK     ",
+        "stderr": "Error: unable to find queries: stat /app/assets/queries: no such file or directory\nUsage:\n  kics scan [flags]\n\nFlags:\n  -m, --bom                           include bill of materials (BoM) in results output\n      --cloud-provider strings        list of cloud providers to scan (alicloud,aws,azure,gcp,nifcloud,tencentcloud)\n      --config string                 path to configuration file\n      --disable-full-descriptions     disable request for full descriptions and use default vulnerability descri",
+        "exit_code": 126
+    },
+    "spotbugs": {
+        "status": "WORKING",
+        "stdout": "SpotBugs version 4.10.4, https://spotbugs.github.io/\nCommand line options\nfb analyze                   Perform SpotBugs Analysis\nfb errors                    List analysis errors stored in results file\nfb filter                    Filter analysis results\nfb gui                       Launch SpotBugs GUI\nfb help                      Provide help for commands\nfb list                      Convert analysis results to textual form\nfb set                       Set project configuration/options\nfb versi",
+        "stderr": "",
+        "exit_code": 0
+    },
+    "dependency-check": {
+        "status": "WORKING",
+        "stdout": "Dependency-Check Core version 12.1.0\n",
+        "stderr": "",
+        "exit_code": 0
+    }
+}

@@ -15,12 +15,12 @@ import (
 func RunPMD(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "pmd").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "pmd", "check",
+	args := ApplyOptions([]string{"check",
 		"-d", directory,
 		"-R", "rulesets/java/quickstart.xml",
 		"-f", "json",
-		"--no-cache",
-	)
+		"--no-cache",}, nil)
+	cmd := exec.CommandContext(ctx, "pmd", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

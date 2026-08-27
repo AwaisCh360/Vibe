@@ -13,9 +13,9 @@ import (
 	"strings"
 )
 
-func RunStaticCheck(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunStaticCheck(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "staticcheck").Str("dir", directory).Msg("running")
-	staticcheckResults, err := RunStaticcheckOnRepo(ctx, directory)
+	staticcheckResults, err := RunStaticcheckOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "staticcheck").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -24,7 +24,7 @@ func RunStaticCheck(ctx context.Context, directory string) (map[string]interface
 	return utils.ConvertCategorizedResults(newcategorisedresult), nil
 }
 
-func RunStaticcheckOnRepo(ctx context.Context, directory string) (string, error) {
+func RunStaticcheckOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
 	var cmd *exec.Cmd
 
 	if _, err := os.Stat(filepath.Join(directory, "go.mod")); err == nil {

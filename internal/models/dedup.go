@@ -44,21 +44,18 @@ func Deduplicate(findings []Finding) ([]Finding, *DedupMeta) {
 		kept[bestIdx] = true
 
 		// Record duplicate references
-		var dupeIDs []string
 		for _, idx := range indices {
 			if idx != bestIdx {
-				findings[idx].ComputeID()
-				dupeIDs = append(dupeIDs, findings[idx].ID)
+				findings[idx].ComputeFingerprint()
 			}
 		}
-		findings[bestIdx].DuplicateOf = dupeIDs
 	}
 
 	// Build result preserving order
 	var result []Finding
 	for i, f := range findings {
 		if kept[i] {
-			f.ComputeID()
+			f.ComputeFingerprint()
 			result = append(result, f)
 		}
 	}

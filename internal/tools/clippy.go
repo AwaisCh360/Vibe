@@ -12,11 +12,12 @@ import (
 )
 
 // RunClippy runs cargo clippy (Rust linter) and returns findings.
-func RunClippy(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunClippy(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "clippy").Str("dir", directory).Msg("running")
 
 	// --message-format=json emits one JSON object per line
-	cmd := exec.CommandContext(ctx, "cargo", "clippy", "--message-format=json", "--", "-D", "warnings")
+	args := ApplyOptions([]string{"clippy", "--message-format=json", "--", "-D", "warnings"}, options)
+	cmd := exec.CommandContext(ctx, "cargo", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

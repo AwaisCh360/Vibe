@@ -12,7 +12,7 @@ import (
 
 func RunOSVScanner(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "osv-scanner").Str("dir", directory).Msg("running")
-	result, err := runOSVScannerOnRepo(ctx, directory)
+	result, err := runOSVScannerOnRepo(ctx, directory, nil)
 	if err != nil {
 		logger.Warn().Str("tool", "osv-scanner").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -21,8 +21,9 @@ func RunOSVScanner(ctx context.Context, directory string) (map[string]interface{
 	return utils.ConvertCategorizedResults(ans), nil
 }
 
-func runOSVScannerOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "osv-scanner", "scan", "-r", "--format", "json", "--call-analysis", "all", directory)
+func runOSVScannerOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{"scan", "-r", "--format", "json", "--call-analysis", "all", directory}, options)
+	cmd := exec.CommandContext(ctx, "osv-scanner", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		// osv-scanner exits non-zero when vulnerabilities are found

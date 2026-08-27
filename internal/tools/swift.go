@@ -10,7 +10,8 @@ import (
 
 // RunSwiftLint runs SwiftLint for Swift code security checks.
 func RunSwiftLint(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "swiftlint", "lint", "--reporter", "json", dirPath)
+	args := ApplyOptions([]string{"lint", "--reporter", "json", dirPath}, nil)
+	cmd := exec.CommandContext(ctx, "swiftlint", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() <= 2 {
@@ -55,8 +56,9 @@ func parseSwiftLintOutput(output []byte) (map[string]interface{}, error) {
 }
 
 // RunShellCheck runs ShellCheck for shell script analysis.
-func RunShellCheck(ctx context.Context, filePath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "shellcheck", "--format=json", filePath)
+func RunShellCheck(ctx context.Context, filePath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"--format=json", filePath}, options)
+	cmd := exec.CommandContext(ctx, "shellcheck", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {

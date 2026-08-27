@@ -12,10 +12,11 @@ import (
 )
 
 // RunBrakeman runs the Brakeman Rails security scanner on a Ruby project directory.
-func RunBrakeman(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunBrakeman(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "brakeman").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "brakeman", "-f", "json", "-q", directory)
+	args := ApplyOptions([]string{"-f", "json", "-q", directory}, options)
+	cmd := exec.CommandContext(ctx, "brakeman", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

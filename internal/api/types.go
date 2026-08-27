@@ -2,6 +2,22 @@ package api
 
 import "time"
 
+// CreateScanRequest represents a unified scan request in the SaaS API.
+type CreateScanRequest struct {
+	RepositoryURL string      `json:"repository_url" binding:"required"`
+	Branch        string      `json:"branch,omitempty"`
+	ScanType      string      `json:"scan_type" binding:"required"` // quick, full, custom
+	Categories    []string    `json:"categories,omitempty"`         // used if scan_type is custom
+	Options       map[string]interface{} `json:"options,omitempty"`
+}
+
+// ScanOptions configures detailed rules for the scan.
+type ScanOptions struct {
+	GenerateSBOM   bool     `json:"generate_sbom"`
+	FailOnCritical bool     `json:"fail_on_critical"`
+	IgnorePaths    []string `json:"ignore_paths"`
+}
+
 // ScanSubmitResponse is returned when a scan is successfully enqueued.
 type ScanSubmitResponse struct {
 	TaskID   string    `json:"task_id"`

@@ -12,10 +12,11 @@ import (
 )
 
 // RunHadolint runs hadolint on all Dockerfiles found in the given directory.
-func RunHadolint(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunHadolint(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "hadolint").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "hadolint", "--format", "json", directory)
+	args := ApplyOptions([]string{"--format", "json", directory}, options)
+	cmd := exec.CommandContext(ctx, "hadolint", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

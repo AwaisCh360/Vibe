@@ -15,14 +15,13 @@ import (
 
 // RunFlawfinder runs Flawfinder on a C/C++ project directory.
 // Flawfinder is a Python tool so it must be installed in the environment.
-func RunFlawfinder(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunFlawfinder(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "flawfinder").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "flawfinder",
-		"--csv",
+	args := ApplyOptions([]string{"--csv",
 		"--quiet",
-		directory,
-	)
+		directory,}, options)
+	cmd := exec.CommandContext(ctx, "flawfinder", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

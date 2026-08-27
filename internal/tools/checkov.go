@@ -11,9 +11,9 @@ import (
 	"strings"
 )
 
-func RunCheckov(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunCheckov(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "checkov").Str("dir", directory).Msg("running")
-	results, err := runCheckovOnRepo(ctx, directory)
+	results, err := runCheckovOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "checkov").Err(err).Msg("tool execution failed")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -22,8 +22,9 @@ func RunCheckov(ctx context.Context, directory string) (map[string]interface{}, 
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runCheckovOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "checkov", "-d", directory, "--quiet", "--compact", "-o", "json", "--download-external-modules", "true")
+func runCheckovOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{"-d", directory, "--quiet", "--compact", "-o", "json", "--download-external-modules", "true"}, options)
+	cmd := exec.CommandContext(ctx, "checkov", args...)
 	result, err := cmd.CombinedOutput()
 	if err != nil {
 		if _, ok := err.(*exec.Error); ok || (err.Error() != "exit status 1" && len(result) == 0) {

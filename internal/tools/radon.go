@@ -11,15 +11,16 @@ import (
 	"strings"
 )
 
-func RunRadon(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunRadon(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "radon").Str("dir", directory).Msg("running")
-	radonResults := RunRadonOnRepo(ctx, directory)
+	radonResults := RunRadonOnRepo(ctx, directory, options)
 	categorizedResults := CategorizeRadonResults(radonResults, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunRadonOnRepo(ctx context.Context, directory string) string {
-	cmd := exec.CommandContext(ctx, "radon", "cc", "-j", directory)
+func RunRadonOnRepo(ctx context.Context, directory string, options map[string]interface{}) string {
+	args := ApplyOptions([]string{"cc", "-j", directory}, options)
+	cmd := exec.CommandContext(ctx, "radon", args...)
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

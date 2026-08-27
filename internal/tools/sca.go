@@ -50,7 +50,8 @@ func DetectPackageEcosystem(dirPath string) []string {
 
 // RunNpmAudit runs npm audit and returns parsed findings.
 func RunNpmAudit(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "npm", "audit", "--json")
+	args := ApplyOptions([]string{"audit", "--json"}, nil)
+	cmd := exec.CommandContext(ctx, "npm", args...)
 	cmd.Dir = dirPath
 	out, _ := cmd.Output() // npm audit exits non-zero when vulns found
 
@@ -104,8 +105,9 @@ func formatNpmAudit(raw map[string]interface{}) map[string]interface{} {
 }
 
 // RunPipAudit runs pip-audit for Python dependency checking.
-func RunPipAudit(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "pip-audit", "--format", "json", "--desc")
+func RunPipAudit(ctx context.Context, dirPath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"--format", "json", "--desc"}, options)
+	cmd := exec.CommandContext(ctx, "pip-audit", args...)
 	cmd.Dir = dirPath
 	out, err := cmd.Output()
 	if err != nil {
@@ -146,17 +148,18 @@ func RunPipAudit(ctx context.Context, dirPath string) (map[string]interface{}, e
 
 // RunCargoAuditSCA runs cargo-audit specifically for SCA (already exists as RunCargoAudit, this wraps it for SCA context).
 func RunCargoAuditSCA(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	return RunCargoAudit(ctx, dirPath)
+	return RunCargoAudit(ctx, dirPath, nil)
 }
 
 // RunBundleAuditSCA runs bundle-audit for Ruby dependency checking.
 func RunBundleAuditSCA(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	return RunBundlerAudit(ctx, dirPath)
+	return RunBundlerAudit(ctx, dirPath, nil)
 }
 
 // RunComposerAudit runs the PHP security checker for Composer dependencies.
-func RunComposerAudit(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "local-php-security-checker", "--format=json")
+func RunComposerAudit(ctx context.Context, dirPath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"--format=json"}, options)
+	cmd := exec.CommandContext(ctx, "local-php-security-checker", args...)
 	cmd.Dir = dirPath
 	out, err := cmd.Output()
 	if err != nil {

@@ -334,7 +334,7 @@ func buildSimpleScanRunners(dirPath, language string) []func() toolResult {
 func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult, []string) {
 	runners := []func() toolResult{
 		withTimeout("semgrep", func(ctx context.Context) toolResult {
-			r, err := tools.RunSemgrep(ctx, dirPath, "--config=auto")
+			r, err := tools.RunSemgrep(ctx, dirPath, "--config=auto", nil)
 			return toolResult{"semgrep", r, err}
 		}),
 	}
@@ -344,27 +344,27 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "go":
 		runners = append(runners,
 			withTimeout("gosec", func(ctx context.Context) toolResult {
-				r, err := tools.RunGosec(ctx, dirPath)
+				r, err := tools.RunGosec(ctx, dirPath, nil)
 				return toolResult{"gosec", r, err}
 			}),
 			withTimeout("golint", func(ctx context.Context) toolResult {
-				r, err := tools.RunGolint(ctx, dirPath)
+				r, err := tools.RunGolint(ctx, dirPath, nil)
 				return toolResult{"golint", r, err}
 			}),
 			withTimeout("govet", func(ctx context.Context) toolResult {
-				r, err := tools.RunGovet(ctx, dirPath)
+				r, err := tools.RunGovet(ctx, dirPath, nil)
 				return toolResult{"govet", r, err}
 			}),
 			withTimeout("staticcheck", func(ctx context.Context) toolResult {
-				r, err := tools.RunStaticCheck(ctx, dirPath)
+				r, err := tools.RunStaticCheck(ctx, dirPath, nil)
 				return toolResult{"staticcheck", r, err}
 			}),
 			withTimeout("gocyclo", func(ctx context.Context) toolResult {
-				r, err := tools.RunGocyclo(ctx, dirPath)
+				r, err := tools.RunGocyclo(ctx, dirPath, nil)
 				return toolResult{"gocyclo", r, err}
 			}),
 			withTimeout("govulncheck", func(ctx context.Context) toolResult {
-				r, err := tools.RunGovulncheck(ctx, dirPath)
+				r, err := tools.RunGovulncheck(ctx, dirPath, nil)
 				return toolResult{"govulncheck", r, err}
 			}),
 		)
@@ -372,23 +372,23 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "py":
 		runners = append(runners,
 			withTimeout("bandit", func(ctx context.Context) toolResult {
-				r, err := tools.RunBandit(ctx, dirPath)
+				r, err := tools.RunBandit(ctx, dirPath, nil)
 				return toolResult{"bandit", r, err}
 			}),
 			withTimeout("pydocstyle", func(ctx context.Context) toolResult {
-				r, err := tools.RunPydocstyle(ctx, dirPath)
+				r, err := tools.RunPydocstyle(ctx, dirPath, nil)
 				return toolResult{"pydocstyle", r, err}
 			}),
 			withTimeout("radon", func(ctx context.Context) toolResult {
-				r, err := tools.RunRadon(ctx, dirPath)
+				r, err := tools.RunRadon(ctx, dirPath, nil)
 				return toolResult{"radon", r, err}
 			}),
 			withTimeout("pylint", func(ctx context.Context) toolResult {
-				r, err := tools.RunPylint(ctx, dirPath)
+				r, err := tools.RunPylint(ctx, dirPath, nil)
 				return toolResult{"pylint", r, err}
 			}),
 			withTimeout("pip-audit", func(ctx context.Context) toolResult {
-				r, err := tools.RunPipAudit(ctx, dirPath)
+				r, err := tools.RunPipAudit(ctx, dirPath, nil)
 				return toolResult{"pip-audit", r, err}
 			}),
 		)
@@ -396,7 +396,7 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "js":
 		runners = append(runners,
 			withTimeout("eslint", func(ctx context.Context) toolResult {
-				r, err := tools.RunESLintOnRepo(ctx, dirPath)
+				r, err := tools.RunESLintOnRepo(ctx, dirPath, nil)
 				return toolResult{"eslint", r, err}
 			}),
 		)
@@ -404,15 +404,15 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "rust":
 		runners = append(runners,
 			withTimeout("cargo-audit", func(ctx context.Context) toolResult {
-				r, err := tools.RunCargoAudit(ctx, dirPath)
+				r, err := tools.RunCargoAudit(ctx, dirPath, nil)
 				return toolResult{"cargo-audit", r, err}
 			}),
 			withTimeout("cargo-geiger", func(ctx context.Context) toolResult {
-				r, err := tools.RunCargoGeiger(ctx, dirPath)
+				r, err := tools.RunCargoGeiger(ctx, dirPath, nil)
 				return toolResult{"cargo-geiger", r, err}
 			}),
 			withTimeout("clippy", func(ctx context.Context) toolResult {
-				r, err := tools.RunClippy(ctx, dirPath)
+				r, err := tools.RunClippy(ctx, dirPath, nil)
 				return toolResult{"clippy", r, err}
 			}),
 		)
@@ -420,7 +420,7 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "java":
 		runners = append(runners,
 			withTimeout("spotbugs", func(ctx context.Context) toolResult {
-				r, err := tools.RunSpotBugs(ctx, dirPath)
+				r, err := tools.RunSpotBugs(ctx, dirPath, nil)
 				return toolResult{"spotbugs", r, err}
 			}),
 			withTimeout("pmd", func(ctx context.Context) toolResult {
@@ -428,7 +428,7 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 				return toolResult{"pmd", r, err}
 			}),
 			withTimeout("dependency-check", func(ctx context.Context) toolResult {
-				r, err := tools.RunDependencyCheck(ctx, dirPath)
+				r, err := tools.RunDependencyCheck(ctx, dirPath, nil)
 				return toolResult{"dependency-check", r, err}
 			}),
 		)
@@ -436,11 +436,11 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "ruby":
 		runners = append(runners,
 			withTimeout("brakeman", func(ctx context.Context) toolResult {
-				r, err := tools.RunBrakeman(ctx, dirPath)
+				r, err := tools.RunBrakeman(ctx, dirPath, nil)
 				return toolResult{"brakeman", r, err}
 			}),
 			withTimeout("bundler-audit", func(ctx context.Context) toolResult {
-				r, err := tools.RunBundlerAudit(ctx, dirPath)
+				r, err := tools.RunBundlerAudit(ctx, dirPath, nil)
 				return toolResult{"bundler-audit", r, err}
 			}),
 		)
@@ -448,15 +448,15 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "php":
 		runners = append(runners,
 			withTimeout("phpcs", func(ctx context.Context) toolResult {
-				r, err := tools.RunPHPCS(ctx, dirPath)
+				r, err := tools.RunPHPCS(ctx, dirPath, nil)
 				return toolResult{"phpcs", r, err}
 			}),
 			withTimeout("psalm", func(ctx context.Context) toolResult {
-				r, err := tools.RunPsalm(ctx, dirPath)
+				r, err := tools.RunPsalm(ctx, dirPath, nil)
 				return toolResult{"psalm", r, err}
 			}),
 			withTimeout("local-php-security-checker", func(ctx context.Context) toolResult {
-				r, err := tools.RunComposerAudit(ctx, dirPath)
+				r, err := tools.RunComposerAudit(ctx, dirPath, nil)
 				return toolResult{"local-php-security-checker", r, err}
 			}),
 		)
@@ -464,11 +464,11 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "c":
 		runners = append(runners,
 			withTimeout("cppcheck", func(ctx context.Context) toolResult {
-				r, err := tools.RunCppcheck(ctx, dirPath)
+				r, err := tools.RunCppcheck(ctx, dirPath, nil)
 				return toolResult{"cppcheck", r, err}
 			}),
 			withTimeout("flawfinder", func(ctx context.Context) toolResult {
-				r, err := tools.RunFlawfinder(ctx, dirPath)
+				r, err := tools.RunFlawfinder(ctx, dirPath, nil)
 				return toolResult{"flawfinder", r, err}
 			}),
 		)
@@ -476,23 +476,23 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "iac":
 		runners = append(runners,
 			withTimeout("hadolint", func(ctx context.Context) toolResult {
-				r, err := tools.RunHadolint(ctx, dirPath)
+				r, err := tools.RunHadolint(ctx, dirPath, nil)
 				return toolResult{"hadolint", r, err}
 			}),
 			withTimeout("tfsec", func(ctx context.Context) toolResult {
-				r, err := tools.RunTfsec(ctx, dirPath)
+				r, err := tools.RunTfsec(ctx, dirPath, nil)
 				return toolResult{"tfsec", r, err}
 			}),
 			withTimeout("kics", func(ctx context.Context) toolResult {
-				r, err := tools.RunKICS(ctx, dirPath)
+				r, err := tools.RunKICS(ctx, dirPath, nil)
 				return toolResult{"kics", r, err}
 			}),
 			withTimeout("kube-linter", func(ctx context.Context) toolResult {
-				r, err := tools.RunKubeLinter(ctx, dirPath)
+				r, err := tools.RunKubeLinter(ctx, dirPath, nil)
 				return toolResult{"kube-linter", r, err}
 			}),
 			withTimeout("kube-score", func(ctx context.Context) toolResult {
-				r, err := tools.RunKubeScore(ctx, dirPath)
+				r, err := tools.RunKubeScore(ctx, dirPath, nil)
 				return toolResult{"kube-score", r, err}
 			}),
 			withTimeout("kubesec", func(ctx context.Context) toolResult {
@@ -504,11 +504,11 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "sol":
 		runners = append(runners,
 			withTimeout("slither", func(ctx context.Context) toolResult {
-				r, err := tools.RunSlither(ctx, dirPath)
+				r, err := tools.RunSlither(ctx, dirPath, nil)
 				return toolResult{"slither", r, err}
 			}),
 			withTimeout("mythril", func(ctx context.Context) toolResult {
-				r, err := tools.RunMythril(ctx, dirPath)
+				r, err := tools.RunMythril(ctx, dirPath, nil)
 				return toolResult{"mythril", r, err}
 			}),
 		)
@@ -536,7 +536,7 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	case "sh":
 		runners = append(runners,
 			withTimeout("shellcheck", func(ctx context.Context) toolResult {
-				r, err := tools.RunShellCheck(ctx, dirPath)
+				r, err := tools.RunShellCheck(ctx, dirPath, nil)
 				return toolResult{"shellcheck", r, err}
 			}),
 		)
@@ -550,19 +550,19 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 func RunAdvancedScans(dirPath string, language string) (map[string]interface{}, []ScanError, error) {
 	runners := []func() toolResult{
 		withTimeout("jscpd", func(ctx context.Context) toolResult {
-			r, err := tools.RunJSCPD(ctx, dirPath)
+			r, err := tools.RunJSCPD(ctx, dirPath, nil)
 			return toolResult{"jscpd", r, err}
 		}),
 		withTimeout("checkov", func(ctx context.Context) toolResult {
-			r, err := tools.RunCheckov(ctx, dirPath)
+			r, err := tools.RunCheckov(ctx, dirPath, nil)
 			return toolResult{"checkov", r, err}
 		}),
 		withTimeout("trufflehog", func(ctx context.Context) toolResult {
-			r, err := tools.RunTrufflehog(ctx, dirPath)
+			r, err := tools.RunTrufflehog(ctx, dirPath, nil)
 			return toolResult{"trufflehog", r, err}
 		}),
 		withTimeout("trivy", func(ctx context.Context) toolResult {
-			r, err := tools.RunTrivy(ctx, dirPath)
+			r, err := tools.RunTrivy(ctx, dirPath, nil)
 			return toolResult{"trivy", r, err}
 		}),
 		withTimeout("osv-scanner", func(ctx context.Context) toolResult {
@@ -570,11 +570,11 @@ func RunAdvancedScans(dirPath string, language string) (map[string]interface{}, 
 			return toolResult{"osv-scanner", r, err}
 		}),
 		withTimeout("grype", func(ctx context.Context) toolResult {
-			r, err := tools.RunGrype(ctx, dirPath)
+			r, err := tools.RunGrype(ctx, dirPath, nil)
 			return toolResult{"grype", r, err}
 		}),
 		withTimeout("cdxgen", func(ctx context.Context) toolResult {
-			err := tools.RunCdxgen(ctx, dirPath, filepath.Join(dirPath, "bom.json"))
+			err := tools.RunCdxgen(ctx, dirPath, filepath.Join(dirPath, "bom.json"), nil)
 			if err != nil {
 				return toolResult{"cdxgen", nil, err}
 			}
@@ -590,7 +590,7 @@ func RunAdvancedScans(dirPath string, language string) (map[string]interface{}, 
 		}))
 	case "py":
 		runners = append(runners, withTimeout("vulture", func(ctx context.Context) toolResult {
-			r, err := tools.RunVulture(ctx, dirPath)
+			r, err := tools.RunVulture(ctx, dirPath, nil)
 			return toolResult{"vulture", r, err}
 		}))
 	case "js":

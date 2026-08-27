@@ -12,13 +12,13 @@ import (
 )
 
 // RunKubeScore runs kube-score on Kubernetes manifests in the given directory.
-func RunKubeScore(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunKubeScore(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "kube-score").Str("dir", directory).Msg("running")
 
 	// kube-score reads from stdin or files; find all yaml files first
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		"find "+directory+" -name '*.yaml' -o -name '*.yml' | xargs kube-score score --output-format json 2>/dev/null",
-	)
+	args := ApplyOptions([]string{"-c",
+		"find "+directory+" -name '*.yaml' -o -name '*.yml' | xargs kube-score score --output-format json 2>/dev/null",}, options)
+	cmd := exec.CommandContext(ctx, "sh", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

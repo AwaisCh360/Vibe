@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"strconv"
+	
+	"gorm.io/gorm"
 )
 
 // Severity represents the severity level of a finding.
@@ -19,8 +21,11 @@ const (
 
 // Finding represents a single security finding from any tool.
 type Finding struct {
-	ID          string   `json:"id"`
-	Tool        string   `json:"tool"`
+	gorm.Model
+	ScanHistoryID uint   `gorm:"index" json:"scan_history_id"`
+	RepositoryID  uint   `gorm:"index" json:"repository_id"`
+	Fingerprint   string `gorm:"uniqueIndex" json:"fingerprint"`
+	Tool          string `json:"tool"`
 	Source      string   `json:"source,omitempty"` // sast | dast | sca | secrets | iac | exploit | attack_path
 	Category    string   `json:"category"`         // security_issues | antipatterns_bugs | complex_functions | etc.
 	File        string   `json:"file"`
@@ -35,12 +40,11 @@ type Finding struct {
 	Message     string   `json:"message"`
 	Snippet     string   `json:"snippet,omitempty"`
 	Remediation string   `json:"remediation,omitempty"`
-	Confirmed   bool     `json:"confirmed,omitempty"`    // true when DAST or exploit simulation verified
-	DuplicateOf []string `json:"duplicate_of,omitempty"` // IDs of findings this is a duplicate of
+	Status      string   `json:"status" gorm:"default:'open'"` // open, resolved, ignored, false_positive
 }
 
-// ComputeID generates a SHA256 fingerprint for the finding.
-func (f *Finding) ComputeID() {
+// ComputeFingerprint generates a SHA256 fingerprint for the finding.
+func (f *Finding) ComputeFingerprint() {
 	data := f.Tool + "|" + f.File + "|" + strconv.Itoa(f.Line) + "|" + f.RuleID + "|"
 	if len(f.Message) > 64 {
 		data += f.Message[:64]
@@ -48,7 +52,7 @@ func (f *Finding) ComputeID() {
 		data += f.Message
 	}
 	hash := sha256.Sum256([]byte(data))
-	f.ID = fmt.Sprintf("%x", hash[:16]) // 32-char hex string
+	f.Fingerprint = fmt.Sprintf("%x", hash[:16]) // 32-char hex string
 }
 
 // ScanResult represents the complete output of a scan.

@@ -14,14 +14,15 @@ import (
 )
 
 // RunMythril runs the Mythril symbolic execution tool on all .sol files in directory.
-func RunMythril(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunMythril(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "mythril").Str("dir", directory).Msg("running")
 
 	// Find all .sol files and run myth analyze on each.
 	categorized := utils.InitCategorizedResults()
 
 	// Use find to locate .sol files
-	findCmd := exec.CommandContext(ctx, "find", directory, "-name", "*.sol", "-not", "-path", "*/node_modules/*")
+	args := ApplyOptions([]string{directory, "-name", "*.sol", "-not", "-path", "*/node_modules/*"}, options)
+	findCmd := exec.CommandContext(ctx, "find", args...)
 	var findOut bytes.Buffer
 	findCmd.Stdout = &findOut
 	findCmd.Run()
@@ -37,11 +38,11 @@ func RunMythril(ctx context.Context, directory string) (map[string]interface{}, 
 			continue
 		}
 
-		cmd := exec.CommandContext(ctx, "myth", "analyze", solFile,
+		args := ApplyOptions([]string{"analyze", solFile,
 			"--solv", "0.8.0",
 			"-o", "json",
-			"--execution-timeout", "60",
-		)
+			"--execution-timeout", "60",}, options)
+		cmd := exec.CommandContext(ctx, "myth", args...)
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr

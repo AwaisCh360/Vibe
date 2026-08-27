@@ -12,14 +12,13 @@ import (
 )
 
 // RunPsalm runs the Psalm PHP static analysis tool on a project directory.
-func RunPsalm(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunPsalm(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "psalm").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "psalm",
-		"--output-format=json",
+	args := ApplyOptions([]string{"--output-format=json",
 		"--no-progress",
-		directory,
-	)
+		directory,}, options)
+	cmd := exec.CommandContext(ctx, "psalm", args...)
 	cmd.Dir = directory
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

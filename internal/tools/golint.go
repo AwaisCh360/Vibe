@@ -11,9 +11,9 @@ import (
 	"strings"
 )
 
-func RunGolint(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunGolint(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "golint").Str("dir", directory).Msg("running")
-	golintResults, err := runGolintOnRepo(ctx, directory)
+	golintResults, err := runGolintOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "golint").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -22,8 +22,9 @@ func RunGolint(ctx context.Context, directory string) (map[string]interface{}, e
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runGolintOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "golint", "./...")
+func runGolintOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{"./..."}, options)
+	cmd := exec.CommandContext(ctx, "golint", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

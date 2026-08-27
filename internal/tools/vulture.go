@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-func RunVulture(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunVulture(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "vulture").Str("dir", directory).Msg("running")
-	vultureResults, err := runVultureOnRepo(ctx, directory)
+	vultureResults, err := runVultureOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "vulture").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -20,8 +20,9 @@ func RunVulture(ctx context.Context, directory string) (map[string]interface{}, 
 	return utils.ConvertCategorizedResults(ans), nil
 }
 
-func runVultureOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "vulture", directory)
+func runVultureOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{directory}, options)
+	cmd := exec.CommandContext(ctx, "vulture", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		if _, ok := err.(*exec.Error); ok || (err.Error() != "exit status 1" && len(output) == 0) {

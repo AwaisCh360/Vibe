@@ -13,10 +13,11 @@ import (
 )
 
 // RunCargoAudit runs cargo-audit on a Rust project directory and returns findings.
-func RunCargoAudit(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunCargoAudit(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "cargo-audit").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "cargo", "audit", "--json")
+	args := ApplyOptions([]string{"audit", "--json"}, options)
+	cmd := exec.CommandContext(ctx, "cargo", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

@@ -12,10 +12,11 @@ import (
 )
 
 // RunKubeLinter runs kube-linter on a directory containing Kubernetes manifests.
-func RunKubeLinter(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunKubeLinter(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "kube-linter").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "kube-linter", "lint", "--format", "json", directory)
+	args := ApplyOptions([]string{"lint", "--format", "json", directory}, options)
+	cmd := exec.CommandContext(ctx, "kube-linter", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

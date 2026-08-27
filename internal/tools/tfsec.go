@@ -12,10 +12,11 @@ import (
 )
 
 // RunTfsec runs tfsec on a Terraform project directory.
-func RunTfsec(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunTfsec(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "tfsec").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "tfsec", "--format", "json", "--no-color", directory)
+	args := ApplyOptions([]string{"--format", "json", "--no-color", directory}, options)
+	cmd := exec.CommandContext(ctx, "tfsec", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

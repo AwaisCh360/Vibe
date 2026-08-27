@@ -9,8 +9,9 @@ import (
 )
 
 // RunCdxgen generates a CycloneDX SBOM using cdxgen.
-func RunCdxgen(ctx context.Context, dirPath, outputPath string) error {
-	cmd := exec.CommandContext(ctx, "cdxgen", "-o", outputPath, dirPath)
+func RunCdxgen(ctx context.Context, dirPath, outputPath string, options map[string]interface{}) error {
+	args := ApplyOptions([]string{"-o", outputPath, dirPath}, options)
+	cmd := exec.CommandContext(ctx, "cdxgen", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("cdxgen error: %w\n%s", err, string(output))
@@ -20,7 +21,8 @@ func RunCdxgen(ctx context.Context, dirPath, outputPath string) error {
 
 // RunTrivySBOM generates a CycloneDX SBOM using Trivy.
 func RunTrivySBOM(ctx context.Context, dirPath, outputPath string) error {
-	cmd := exec.CommandContext(ctx, "trivy", "fs", "--format", "cyclonedx", "--output", outputPath, dirPath)
+	args := ApplyOptions([]string{"fs", "--format", "cyclonedx", "--output", outputPath, dirPath}, nil)
+	cmd := exec.CommandContext(ctx, "trivy", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("trivy sbom error: %w\n%s", err, string(output))
@@ -30,7 +32,8 @@ func RunTrivySBOM(ctx context.Context, dirPath, outputPath string) error {
 
 // RunTrivySPDX generates an SPDX SBOM using Trivy.
 func RunTrivySPDX(ctx context.Context, dirPath, outputPath string) error {
-	cmd := exec.CommandContext(ctx, "trivy", "fs", "--format", "spdx-json", "--output", outputPath, dirPath)
+	args := ApplyOptions([]string{"fs", "--format", "spdx-json", "--output", outputPath, dirPath}, nil)
+	cmd := exec.CommandContext(ctx, "trivy", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("trivy spdx error: %w\n%s", err, string(output))
@@ -78,7 +81,8 @@ func fileExists(ctx context.Context, dir, name string) bool {
 
 // ParseSBOMDependencies extracts dependencies from a CycloneDX SBOM.
 func ParseSBOMDependencies(ctx context.Context, sbomPath string) ([]SBOMComponent, error) {
-	cmd := exec.CommandContext(ctx, "cat", sbomPath)
+	args := ApplyOptions([]string{sbomPath}, nil)
+	cmd := exec.CommandContext(ctx, "cat", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err

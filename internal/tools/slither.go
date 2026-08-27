@@ -13,10 +13,11 @@ import (
 )
 
 // RunSlither runs the Slither Solidity static analyzer on a project directory.
-func RunSlither(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunSlither(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "slither").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "slither", ".", "--json", "-")
+	args := ApplyOptions([]string{".", "--json", "-"}, options)
+	cmd := exec.CommandContext(ctx, "slither", args...)
 	cmd.Dir = directory
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

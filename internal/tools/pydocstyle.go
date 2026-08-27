@@ -11,15 +11,16 @@ import (
 	"strings"
 )
 
-func RunPydocstyle(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunPydocstyle(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "pydocstyle").Str("dir", directory).Msg("running")
-	pydocstyleResults := RunPydocstyleOnRepo(ctx, directory)
+	pydocstyleResults := RunPydocstyleOnRepo(ctx, directory, options)
 	categorizedResults := CategorizePydocstyleResults(pydocstyleResults, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunPydocstyleOnRepo(ctx context.Context, directory string) string {
-	cmd := exec.CommandContext(ctx, "pydocstyle", directory)
+func RunPydocstyleOnRepo(ctx context.Context, directory string, options map[string]interface{}) string {
+	args := ApplyOptions([]string{directory}, options)
+	cmd := exec.CommandContext(ctx, "pydocstyle", args...)
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

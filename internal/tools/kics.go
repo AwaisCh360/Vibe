@@ -15,7 +15,7 @@ import (
 )
 
 // RunKICS runs Checkmarx KICS (multi-IaC scanner) on the given directory.
-func RunKICS(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunKICS(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "kics").Str("dir", directory).Msg("running")
 
 	outDir, err := os.MkdirTemp("", "kics-out")
@@ -24,12 +24,12 @@ func RunKICS(ctx context.Context, directory string) (map[string]interface{}, err
 	}
 	defer os.RemoveAll(outDir)
 
-	cmd := exec.CommandContext(ctx, "kics", "scan",
+	args := ApplyOptions([]string{"scan",
 		"-p", directory,
 		"-o", outDir,
 		"--report-formats", "json",
-		"--no-progress",
-	)
+		"--no-progress",}, options)
+	cmd := exec.CommandContext(ctx, "kics", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

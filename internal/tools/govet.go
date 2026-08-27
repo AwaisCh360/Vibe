@@ -11,16 +11,17 @@ import (
 	"strings"
 )
 
-func RunGovet(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunGovet(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "govet").Str("dir", directory).Msg("running")
-	govetResults := runGovetOnRepo(ctx, directory)
+	govetResults := runGovetOnRepo(ctx, directory, options)
 	categorizedResults := categorizeGovetResults(govetResults, directory)
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runGovetOnRepo(ctx context.Context, directory string) string {
+func runGovetOnRepo(ctx context.Context, directory string, options map[string]interface{}) string {
 	if _, err := os.Stat(filepath.Join(directory, "go.mod")); err == nil {
-		cmd := exec.CommandContext(ctx, "go", "vet", "./...")
+		args := ApplyOptions([]string{"vet", "./..."}, options)
+		cmd := exec.CommandContext(ctx, "go", args...)
 		cmd.Dir = directory
 		output, _ := cmd.CombinedOutput()
 		return strings.TrimSpace(string(output))
@@ -44,7 +45,8 @@ func runGovetOnRepo(ctx context.Context, directory string) string {
 		return ""
 	}
 
-	cmd := exec.CommandContext(ctx, "go", append([]string{"vet"}, files...)...)
+	args := ApplyOptions(append([]string{"vet"}, files...), options)
+	cmd := exec.CommandContext(ctx, "go", args...)
 	cmd.Dir = directory
 	output, err := cmd.CombinedOutput()
 	if err != nil {

@@ -37,25 +37,29 @@ func RegisterRoutes(r *gin.Engine) {
 		api.GET("/dashboard/history", ScanHistoryList)
 
 		// Scan routes
-		api.POST("/scan/repo", ScanHandler)
-		api.POST("/advanced-scan/repo", AdvancedScanResult)
-		api.POST("/scan/file", ScanFile)
-		api.POST("/scan/local", ScanLocalHandler)
+		api.POST("/scans", CreateScan)
+		api.GET("/scans", ListScans)
+		api.GET("/scans/:task_id", GetScanStatus)
+		api.DELETE("/scans/:task_id", CancelScan)
+		api.GET("/scans/:task_id/progress", TaskProgress) // SSE stream
 
-		// Status
-		api.GET("/status/:task_id", TaskStatus)
+		// Individual Tool Sub-APIs
+		toolGroup := api.Group("/scans/tools")
+		{
+			toolGroup.POST("/:tool_name/scan", CreateDynamicToolScan)
+			toolGroup.GET("/:tool_name/status/:task_id", GetToolScanStatus)
+			toolGroup.GET("/:tool_name/report/:task_id", GetToolScanReport)
+		}
 
-		// Progress (SSE stream)
-		api.GET("/progress/:task_id", TaskProgress)
+		// Vulnerabilities and Reports
+		api.GET("/vulnerabilities", ListVulnerabilities)
+		api.PATCH("/vulnerabilities/:id", UpdateVulnerability)
+		api.GET("/scans/:task_id/report/owasp", TaskOwasp)
+		api.GET("/scans/:task_id/report/sans", TaskSans)
+		
+		// Repositories
+		api.POST("/repositories", CreateRepository)
+		api.GET("/repositories", ListRepositories)
 
-		// Cancel an in-progress scan
-		api.DELETE("/scan/:task_id", CancelScan)
-
-		// Batch scanning
-		api.POST("/scan/batch", BatchScan)
-
-		// Reports
-		api.GET("/reports/owasp/:task_id", TaskOwasp)
-		api.GET("/reports/sans/:task_id", TaskSans)
 	}
 }

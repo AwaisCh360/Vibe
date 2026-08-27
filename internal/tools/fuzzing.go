@@ -17,7 +17,8 @@ func RunGoFuzz(ctx context.Context, dirPath string, timeout time.Duration) (map[
 		timeout = 60 * time.Second
 	}
 
-	cmd := exec.CommandContext(ctx, "go", "test", "-fuzz=Fuzz", fmt.Sprintf("-fuzztime=%s", timeout), "./...")
+	args := ApplyOptions([]string{"test", "-fuzz=Fuzz", fmt.Sprintf("-fuzztime=%s", timeout.String()), "./..."}, nil)
+	cmd := exec.CommandContext(ctx, "go", args...)
 	cmd.Dir = dirPath
 
 	output, err := cmd.CombinedOutput()
@@ -75,10 +76,8 @@ func RunAtheris(ctx context.Context, dirPath string, timeout time.Duration) (map
 
 	findings := []interface{}{}
 	for _, target := range targets {
-		cmd := exec.CommandContext(ctx, "python3", "-m", "atheris",
-			fmt.Sprintf("-runs=%d", int(timeout.Seconds())*100),
-			target,
-		)
+		args := ApplyOptions([]string{"-m", "atheris", fmt.Sprintf("-runs=%d", int(timeout.Seconds())*100), target}, nil)
+		cmd := exec.CommandContext(ctx, "python3", args...)
 		cmd.Dir = dirPath
 
 		output, err := cmd.CombinedOutput()
@@ -100,7 +99,7 @@ func RunAtheris(ctx context.Context, dirPath string, timeout time.Duration) (map
 }
 
 // RunJSFuzz runs JavaScript jsfuzz fuzzer.
-func RunJSFuzz(ctx context.Context, dirPath string, timeout time.Duration) (map[string]interface{}, error) {
+func RunJSFuzz(ctx context.Context, dirPath string, timeout time.Duration, options map[string]interface{}) (map[string]interface{}, error) {
 	targets, _ := filepath.Glob(filepath.Join(dirPath, "*fuzz*.js"))
 	if len(targets) == 0 {
 		return map[string]interface{}{"fuzzing": []interface{}{}}, nil
@@ -108,7 +107,8 @@ func RunJSFuzz(ctx context.Context, dirPath string, timeout time.Duration) (map[
 
 	findings := []interface{}{}
 	for _, target := range targets {
-		cmd := exec.CommandContext(ctx, "jsfuzz", target, "--runs", "5000")
+		args := ApplyOptions([]string{target, "--runs", "5000"}, options)
+		cmd := exec.CommandContext(ctx, "jsfuzz", args...)
 		cmd.Dir = dirPath
 
 		output, err := cmd.CombinedOutput()

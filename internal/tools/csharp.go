@@ -11,7 +11,8 @@ import (
 // RunSecurityCodeScan runs the Roslyn-based C# security scanner.
 func RunSecurityCodeScan(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	// Execute the Security Code Scan using the global tool
-	cmd := exec.CommandContext(ctx, "security-scan", "--project", dirPath, "--export-sarif-file", "/dev/stdout")
+	args := ApplyOptions([]string{"--project", dirPath, "--export-sarif-file", "/dev/stdout"}, nil)
+	cmd := exec.CommandContext(ctx, "security-scan", args...)
 	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {
@@ -28,7 +29,8 @@ func RunSecurityCodeScan(ctx context.Context, dirPath string) (map[string]interf
 
 // RunRoslynator runs the Roslynator code quality analyzer.
 func RunRoslynator(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "roslynator", "analyze", dirPath, "--output", "/dev/stdout", "--format", "json")
+	args := ApplyOptions([]string{"analyze", dirPath, "--output", "/dev/stdout", "--format", "json"}, nil)
+	cmd := exec.CommandContext(ctx, "roslynator", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("roslynator error: %w", err)

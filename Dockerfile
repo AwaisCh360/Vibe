@@ -9,6 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /armur-server ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /armur-worker ./cmd/worker/main.go
 
 # ============================================================
 # Stage 2: Go security tools
@@ -19,12 +20,12 @@ RUN apk add --no-cache git
 ENV GOBIN=/go-tools
 RUN mkdir -p /go-tools
 
-RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.19.0 && \
+RUN go install github.com/securego/gosec/v2/cmd/gosec@latest && \
     go install golang.org/x/lint/golint@latest && \
     go install honnef.co/go/tools/cmd/staticcheck@latest && \
-    go install github.com/fzipp/gocyclo/cmd/gocyclo@v0.6.0 && \
-    go install golang.org/x/tools/cmd/deadcode@v0.49.0 && \
-    go install github.com/google/osv-scanner/cmd/osv-scanner@v1.9.2
+    go install github.com/fzipp/gocyclo/cmd/gocyclo@latest && \
+    go install golang.org/x/tools/cmd/deadcode@latest && \
+    go install github.com/google/osv-scanner/cmd/osv-scanner@latest
 
 # ============================================================
 # Stage 3: Python security tools
@@ -113,6 +114,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 
 # Go binary + Go tools
 COPY --from=go-builder /armur-server /usr/local/bin/armur-server
+COPY --from=go-builder /armur-worker /usr/local/bin/armur-worker
 COPY --from=go-tools   /go-tools     /usr/local/bin/
 
 # Python tools

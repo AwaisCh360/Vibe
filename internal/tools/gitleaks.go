@@ -9,13 +9,13 @@ import (
 )
 
 // RunGitleaks runs the gitleaks secret scanner on the given directory.
-func RunGitleaks(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "gitleaks", "detect",
+func RunGitleaks(ctx context.Context, dirPath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"detect",
 		"--source", dirPath,
 		"--report-format", "json",
 		"--report-path", "/dev/stdout",
-		"--no-banner",
-	)
+		"--no-banner",}, options)
+	cmd := exec.CommandContext(ctx, "gitleaks", args...)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -32,13 +32,13 @@ func RunGitleaks(ctx context.Context, dirPath string) (map[string]interface{}, e
 
 // RunGitleaksHistory runs gitleaks against the full git history.
 func RunGitleaksHistory(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "gitleaks", "detect",
+	args := ApplyOptions([]string{"detect",
 		"--source", dirPath,
 		"--report-format", "json",
 		"--report-path", "/dev/stdout",
 		"--no-banner",
-		"--log-opts=--all",
-	)
+		"--log-opts=--all",}, nil)
+	cmd := exec.CommandContext(ctx, "gitleaks", args...)
 
 	output, err := cmd.Output()
 	if err != nil {

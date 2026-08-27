@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	if err := database.AutoMigrate(&models.User{}, &models.ScanHistory{}); err != nil {
+	if err := database.AutoMigrate(&models.User{}, &models.Repository{}, &models.ScanHistory{}, &models.Finding{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
@@ -75,6 +75,7 @@ func startAsynqWorker() error {
 
 	mux := asynq.NewServeMux()
 	mux.Handle("scan:repo", &worker.ScanTaskHandler{})
+	mux.Handle("scan:repo:v2", &worker.ScanTaskHandlerV2{})
 
 	// Start the Asynq server and process tasks
 	return server.Start(mux)

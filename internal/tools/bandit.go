@@ -33,9 +33,9 @@ type BanditIssue struct {
 	EndLine    int      `json:"endLine"`
 }
 
-func RunBandit(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunBandit(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "bandit").Str("dir", directory).Msg("running")
-	results, err := RunBanditOnRepo(ctx, directory)
+	results, err := RunBanditOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "bandit").Err(err).Msg("tool execution failed")
 		return utils.ConvertCategorizedResults(utils.InitCategorizedResults()), err
@@ -44,8 +44,9 @@ func RunBandit(ctx context.Context, directory string) (map[string]interface{}, e
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunBanditOnRepo(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "bandit", "-r", directory, "-f", "json")
+func RunBanditOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{"-r", directory, "-f", "json"}, options)
+	cmd := exec.CommandContext(ctx, "bandit", args...)
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

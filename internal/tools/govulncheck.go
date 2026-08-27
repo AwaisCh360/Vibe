@@ -9,8 +9,9 @@ import (
 )
 
 // RunGovulncheck runs the official Go vulnerability checker with call graph analysis.
-func RunGovulncheck(ctx context.Context, dirPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "govulncheck", "-json", "./...")
+func RunGovulncheck(ctx context.Context, dirPath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"-json", "./..."}, options)
+	cmd := exec.CommandContext(ctx, "govulncheck", args...)
 	cmd.Dir = dirPath
 	output, err := cmd.Output()
 	if err != nil {

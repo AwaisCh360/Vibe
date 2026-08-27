@@ -32,7 +32,7 @@ type Issue struct {
 
 func RunESLintAdvanced(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "eslint-advanced").Str("dir", directory).Msg("running")
-	results, err := RunESLintAdvancedOnRepo(ctx, directory)
+	results, err := RunESLintAdvancedOnRepo(ctx, directory, nil)
 	if err != nil {
 		logger.Warn().Str("tool", "eslint-advanced").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -40,7 +40,7 @@ func RunESLintAdvanced(ctx context.Context, directory string) (map[string]interf
 	return utils.ConvertCategorizedResults(results), nil
 }
 
-func RunESLintOnRepo(ctx context.Context, repoPath string) (map[string]interface{}, error) {
+func RunESLintOnRepo(ctx context.Context, repoPath string, options map[string]interface{}) (map[string]interface{}, error) {
 	categorizedResults := utils.InitCategorizedResults()
 
 	configDir := eslintConfigDir()
@@ -74,10 +74,11 @@ func RunESLintOnRepo(ctx context.Context, repoPath string) (map[string]interface
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func RunESLintAdvancedOnRepo(ctx context.Context, repoPath string) (map[string][]interface{}, error) {
+func RunESLintAdvancedOnRepo(ctx context.Context, repoPath string, options map[string]interface{}) (map[string][]interface{}, error) {
 	categorizedResults := utils.InitAdvancedCategorizedResults()
 
-	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", "--config", filepath.Join(eslintConfigDir(), "eslint_deadcode.config.js"), repoPath)
+	args := ApplyOptions([]string{"--format", "json", "--config", filepath.Join(eslintConfigDir(), "eslint_deadcode.config.js"), repoPath}, options)
+	cmd := exec.CommandContext(ctx, "eslint", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		logger.Debug().Str("tool", "eslint-deadcode").Err(err).Msg("non-zero exit (may still have results)")
@@ -159,7 +160,8 @@ func RunESLint(ctx context.Context, directory, configFile string) ([]map[string]
 		defer os.Remove(configDest)
 	}
 
-	cmd := exec.CommandContext(ctx, "eslint", "--format", "json", "--ignore-pattern", "node_modules/", ".")
+	args := ApplyOptions([]string{"--format", "json", "--ignore-pattern", "node_modules/", "."}, nil)
+	cmd := exec.CommandContext(ctx, "eslint", args...)
 	cmd.Dir = directory
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

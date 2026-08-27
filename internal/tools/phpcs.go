@@ -12,15 +12,14 @@ import (
 )
 
 // RunPHPCS runs PHP_CodeSniffer with security sniffs on a PHP project directory.
-func RunPHPCS(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunPHPCS(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "phpcs").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "phpcs",
-		"--standard=Generic,Security",
+	args := ApplyOptions([]string{"--standard=Generic,Security",
 		"--report=json",
 		"--extensions=php",
-		directory,
-	)
+		directory,}, options)
+	cmd := exec.CommandContext(ctx, "phpcs", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

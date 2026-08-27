@@ -12,16 +12,15 @@ import (
 )
 
 // RunCppcheck runs cppcheck on a C/C++ project directory.
-func RunCppcheck(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunCppcheck(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "cppcheck").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "cppcheck",
-		"--enable=all",
+	args := ApplyOptions([]string{"--enable=all",
 		"--xml",
 		"--xml-version=2",
 		"--quiet",
-		directory,
-	)
+		directory,}, options)
+	cmd := exec.CommandContext(ctx, "cppcheck", args...)
 	// cppcheck writes XML to stderr by default
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

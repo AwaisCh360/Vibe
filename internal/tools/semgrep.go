@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func RunSemgrep(ctx context.Context, directory string, rules string) (map[string]interface{}, error) {
+func RunSemgrep(ctx context.Context, directory string, rules string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "semgrep").Str("dir", directory).Msg("running")
 	semgrepResults, err := runSemgrepOnRepo(ctx, directory, "--config=auto")
 	if err != nil {
@@ -24,7 +24,8 @@ func RunSemgrep(ctx context.Context, directory string, rules string) (map[string
 }
 
 func runSemgrepOnRepo(ctx context.Context, directory string, rules string) (string, error) {
-	cmd := exec.CommandContext(ctx, "semgrep", "--config=auto", "--config=p/security-audit", directory, "--json")
+	args := ApplyOptions([]string{"--config=auto", "--config=p/security-audit", directory, "--json"}, nil)
+	cmd := exec.CommandContext(ctx, "semgrep", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		if _, ok := err.(*exec.Error); ok || (err.Error() != "exit status 1" && len(output) == 0) {

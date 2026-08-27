@@ -11,7 +11,7 @@ import (
 
 func RunGoDeadcode(ctx context.Context, directory string) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "deadcode").Str("dir", directory).Msg("running")
-	results, err := RunDecodeOnRepO(ctx, directory)
+	results, err := RunDecodeOnRepO(ctx, directory, nil)
 	if err != nil {
 		logger.Warn().Str("tool", "deadcode").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -20,8 +20,9 @@ func RunGoDeadcode(ctx context.Context, directory string) (map[string]interface{
 	return utils.ConvertCategorizedResults(catresult), nil
 }
 
-func RunDecodeOnRepO(ctx context.Context, directory string) (string, error) {
-	cmd := exec.CommandContext(ctx, "deadcode", directory)
+func RunDecodeOnRepO(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
+	args := ApplyOptions([]string{directory}, options)
+	cmd := exec.CommandContext(ctx, "deadcode", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Debug().Str("tool", "deadcode").Err(err).Msg("non-zero exit (may still have results)")

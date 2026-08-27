@@ -21,9 +21,9 @@ type Secret struct {
 	Secret string `json:"secret"`
 }
 
-func RunTrufflehog(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunTrufflehog(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "trufflehog").Str("dir", directory).Msg("running")
-	trufflehogResults, err := runTrufflehogOnRepo(ctx, directory)
+	trufflehogResults, err := runTrufflehogOnRepo(ctx, directory, options)
 	if err != nil {
 		logger.Warn().Str("tool", "trufflehog").Err(err).Msg("tool execution failed, returning partial results")
 		return utils.ConvertCategorizedResults(utils.InitAdvancedCategorizedResults()), err
@@ -32,25 +32,28 @@ func RunTrufflehog(ctx context.Context, directory string) (map[string]interface{
 	return utils.ConvertCategorizedResults(categorizedResults), nil
 }
 
-func runTrufflehogOnRepo(ctx context.Context, directory string) (string, error) {
+func runTrufflehogOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
 	if err := setGitSafeDirectory(ctx, directory); err != nil {
 		return "", err
 	}
 	defer unsetGitSafeDirectory(ctx, directory)
 
-	cmd := exec.CommandContext(ctx, "trufflehog3", "--no-entropy", "--json", directory)
+	args := ApplyOptions([]string{"--no-entropy", "--json", directory}, options)
+	cmd := exec.CommandContext(ctx, "trufflehog3", args...)
 	output, _ := cmd.CombinedOutput()
 	return string(output), nil
 }
 
 func setGitSafeDirectory(ctx context.Context, directory string) error {
-	cmd := exec.CommandContext(ctx, "git", "config", "--global", "--add", "safe.directory", directory)
+	args := ApplyOptions([]string{"config", "--global", "--add", "safe.directory", directory}, nil)
+	cmd := exec.CommandContext(ctx, "git", args...)
 	_, err := cmd.CombinedOutput()
 	return err
 }
 
 func unsetGitSafeDirectory(ctx context.Context, directory string) error {
-	cmd := exec.CommandContext(ctx, "git", "config", "--global", "--unset", "safe.directory", directory)
+	args := ApplyOptions([]string{"config", "--global", "--unset", "safe.directory", directory}, nil)
+	cmd := exec.CommandContext(ctx, "git", args...)
 	_, err := cmd.CombinedOutput()
 	return err
 }

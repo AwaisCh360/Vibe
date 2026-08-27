@@ -12,10 +12,11 @@ import (
 )
 
 // RunCargoGeiger runs cargo-geiger to detect unsafe Rust code and returns findings.
-func RunCargoGeiger(ctx context.Context, directory string) (map[string]interface{}, error) {
+func RunCargoGeiger(ctx context.Context, directory string, options map[string]interface{}) (map[string]interface{}, error) {
 	logger.Info().Str("tool", "cargo-geiger").Str("dir", directory).Msg("running")
 
-	cmd := exec.CommandContext(ctx, "cargo", "geiger", "--output-format", "GitHubMarkdown", "--quiet")
+	args := ApplyOptions([]string{"geiger", "--output-format", "GitHubMarkdown", "--quiet"}, options)
+	cmd := exec.CommandContext(ctx, "cargo", args...)
 	cmd.Dir = directory
 
 	var stdout, stderr bytes.Buffer

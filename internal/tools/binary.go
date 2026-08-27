@@ -10,8 +10,9 @@ import (
 )
 
 // RunChecksec runs checksec on a binary to check security hardening.
-func RunChecksec(ctx context.Context, binaryPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "checksec", "--format=json", "--file="+binaryPath)
+func RunChecksec(ctx context.Context, binaryPath string, options map[string]interface{}) (map[string]interface{}, error) {
+	args := ApplyOptions([]string{"--format=json", "--file="+binaryPath}, options)
+	cmd := exec.CommandContext(ctx, "checksec", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("checksec error: %w", err)
@@ -62,7 +63,8 @@ func RunChecksec(ctx context.Context, binaryPath string) (map[string]interface{}
 
 // RunGoVersionM extracts dependency info from compiled Go binaries.
 func RunGoVersionM(ctx context.Context, binaryPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "go", "version", "-m", binaryPath)
+	args := ApplyOptions([]string{"version", "-m", binaryPath}, nil)
+	cmd := exec.CommandContext(ctx, "go", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("go version -m error: %w", err)
@@ -90,7 +92,8 @@ func RunGoVersionM(ctx context.Context, binaryPath string) (map[string]interface
 
 // RunStringScan scans a binary for potentially sensitive hardcoded strings.
 func RunStringScan(ctx context.Context, binaryPath string) (map[string]interface{}, error) {
-	cmd := exec.CommandContext(ctx, "strings", binaryPath)
+	args := ApplyOptions([]string{binaryPath}, nil)
+	cmd := exec.CommandContext(ctx, "strings", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("strings error: %w", err)
