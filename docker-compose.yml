@@ -2,13 +2,13 @@ version: "3.1"
 
 services:
   app:
-    build: .
+    image: ghcr.io/awaisch360/vibe:main
     container_name: api_service
     restart: always
     volumes:
       - ./shared_tmp:/armur/repos
     ports:
-      - "${APP_PORT}:4500"
+      - "4501:4500"
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
@@ -26,7 +26,7 @@ services:
       - "${REDIS_PORT}:6379"
 
   worker:
-    build: .
+    image: ghcr.io/awaisch360/vibe:main
     container_name: worker_service
     restart: always
     volumes:
