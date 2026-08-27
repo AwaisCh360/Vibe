@@ -37,4 +37,4 @@ services:
       - .env
     depends_on:
       - redis_service
-    command: ["/usr/local/bin/armur-worker"]
+    command: ["/usr/local/bin/armur-server"]

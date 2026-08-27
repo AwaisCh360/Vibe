@@ -9,7 +9,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /armur-server ./cmd/server/main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -o /armur-worker ./cmd/worker/main.go
 
 # ============================================================
 # Stage 2: Go security tools
@@ -114,7 +113,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 
 # Go binary + Go tools
 COPY --from=go-builder /armur-server /usr/local/bin/armur-server
-COPY --from=go-builder /armur-worker /usr/local/bin/armur-worker
 COPY --from=go-tools   /go-tools     /usr/local/bin/
 
 # Python tools
