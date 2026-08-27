@@ -104,6 +104,7 @@ FROM python:3.12-slim AS armur-full
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates curl build-essential gcc \
+    default-jre ruby php-cli composer cppcheck flawfinder golang-go cargo wget unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js
@@ -115,15 +116,21 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 COPY --from=go-builder /armur-server /usr/local/bin/armur-server
 COPY --from=go-tools   /go-tools     /usr/local/bin/
 
-# Python tools
+# Python tools & Missing security tools
 COPY --from=python-tools /usr/local /usr/local
+RUN pip install --no-cache-dir slither-analyzer mythril pip-audit
 
-# Trivy
+# Trivy & Grype & IaC tools
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-    | sh -s -- -b /usr/local/bin v0.74.0
+    | sh -s -- -b /usr/local/bin v0.74.0 && \
+    curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin && \
+    curl -sLo /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 && \
+    chmod +x /usr/local/bin/hadolint && \
+    curl -sLo /usr/local/bin/tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.1/tfsec-linux-amd64 && \
+    chmod +x /usr/local/bin/tfsec
 
 # Node tools
-RUN npm install -g eslint@10.9.0 jscpd@5.0.16
+RUN npm install -g eslint@10.9.0 jscpd@5.0.16 @cyclonedx/cdxgen
 
 COPY . /armur
 WORKDIR /armur
