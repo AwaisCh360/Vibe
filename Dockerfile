@@ -105,6 +105,7 @@ FROM python:3.12-slim AS armur-full
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates curl build-essential gcc \
     default-jre ruby php-cli composer cppcheck flawfinder golang-go cargo wget unzip \
+    python3-dev pkg-config libssl-dev libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js
@@ -118,7 +119,9 @@ COPY --from=go-tools   /go-tools     /usr/local/bin/
 
 # Python tools & Missing security tools
 COPY --from=python-tools /usr/local /usr/local
-RUN pip install --no-cache-dir slither-analyzer mythril pip-audit
+RUN pip install --no-cache-dir --break-system-packages slither-analyzer || true
+RUN pip install --no-cache-dir --break-system-packages mythril || true
+RUN pip install --no-cache-dir --break-system-packages pip-audit || true
 
 # Trivy & Grype & IaC tools
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
