@@ -26,7 +26,6 @@ RUN go install golang.org/x/vuln/cmd/govulncheck@latest && \
     go install golang.org/x/tools/cmd/deadcode@latest && \
     go install golang.org/x/lint/golint@latest && \
     go install github.com/google/osv-scanner/cmd/osv-scanner@latest && \
-    go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest && \
     go install github.com/zricethezav/gitleaks/v8@latest && \
     go clean -cache -modcache
 
@@ -135,6 +134,36 @@ RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/
     chmod +x /usr/local/bin/hadolint && \
     curl -sLo /usr/local/bin/tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.1/tfsec-linux-amd64 && \
     chmod +x /usr/local/bin/tfsec
+
+# Install additional IaC tools
+RUN curl -sLo kubelinter.tar.gz https://github.com/stackrox/kube-linter/releases/download/v0.6.8/kube-linter-linux.tar.gz && \
+    tar -xzf kubelinter.tar.gz -C /usr/local/bin/ && rm kubelinter.tar.gz && \
+    curl -sLo /usr/local/bin/kube-score https://github.com/zegl/kube-score/releases/download/v1.18.0/kube-score_1.18.0_linux_amd64 && \
+    chmod +x /usr/local/bin/kube-score && \
+    curl -sLo kics.tar.gz https://github.com/Checkmarx/kics/releases/download/v2.1.2/kics_2.1.2_linux_x64.tar.gz && \
+    tar -xzf kics.tar.gz -C /usr/local/bin kics && rm kics.tar.gz && \
+    curl -sLo kubesec.tar.gz https://github.com/controlplaneio/kubesec/releases/download/v2.14.2/kubesec_linux_amd64.tar.gz && \
+    tar -xzf kubesec.tar.gz -C /usr/local/bin kubesec && rm kubesec.tar.gz && \
+    curl -sLo swiftlint.zip https://github.com/realm/SwiftLint/releases/download/0.65.1/swiftlint_linux_amd64.zip && \
+    unzip swiftlint.zip -d /usr/local/bin/ && chmod +x /usr/local/bin/swiftlint && rm swiftlint.zip
+
+# Install Java tools (PMD, SpotBugs, Dependency-Check)
+RUN curl -sLo pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0/pmd-dist-7.0.0-bin.zip && \
+    unzip pmd.zip -d /opt/ && rm pmd.zip && ln -s /opt/pmd-bin-7.0.0/bin/pmd /usr/local/bin/pmd && \
+    curl -sLo spotbugs.zip https://github.com/spotbugs/spotbugs/releases/download/4.8.4/spotbugs-4.8.4.zip && \
+    unzip spotbugs.zip -d /opt/ && rm spotbugs.zip && ln -s /opt/spotbugs-4.8.4/bin/spotbugs /usr/local/bin/spotbugs && \
+    curl -sLo dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/9.0.9/dependency-check-9.0.9-release.zip && \
+    unzip dependency-check.zip -d /opt/ && rm dependency-check.zip && ln -s /opt/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check
+
+# Install .NET SDK and Roslynator
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 8.0 && \
+    ln -s /root/.dotnet/dotnet /usr/local/bin/dotnet && \
+    /root/.dotnet/dotnet tool install -g roslynator.dotnet.cli && \
+    ln -s /root/.dotnet/tools/roslynator /usr/local/bin/roslynator || true
+
+# Install local-php-security-checker
+RUN curl -sLo /usr/local/bin/local-php-security-checker https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 && \
+    chmod +x /usr/local/bin/local-php-security-checker
 
 # Install Ruby tools
 RUN gem install bundler brakeman bundler-audit || true

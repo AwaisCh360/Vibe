@@ -118,32 +118,52 @@ func RunPipAudit(ctx context.Context, dirPath string, options map[string]interfa
 		}
 	}
 
-	var vulns []map[string]interface{}
-	if err := json.Unmarshal(out, &vulns); err != nil {
+	var report map[string]interface{}
+	if err := json.Unmarshal(out, &report); err != nil {
 		return nil, fmt.Errorf("pip-audit parse error: %w", err)
 	}
 
 	findings := []interface{}{}
-	for _, v := range vulns {
-		name, _ := v["name"].(string)
-		version, _ := v["version"].(string)
-		vulnID, _ := v["id"].(string)
-		desc, _ := v["description"].(string)
-		fix, _ := v["fix_versions"].([]interface{})
+	deps, ok := report["dependencies"].([]interface{})
+	if !ok {
+		return map[string]interface{}{"sca": findings}, nil
+	}
 
-		fixVer := ""
-		if len(fix) > 0 {
-			fixVer = fmt.Sprintf(" (fix: %v)", fix[0])
+	for _, d := range deps {
+		dep, ok := d.(map[string]interface{})
+		if !ok {
+			continue
 		}
+		vulns, ok := dep["vulns"].([]interface{})
+		if !ok || len(vulns) == 0 {
+			continue
+		}
+		name, _ := dep["name"].(string)
+		version, _ := dep["version"].(string)
 
-		findings = append(findings, map[string]interface{}{
-			"path":     fmt.Sprintf("requirements.txt → %s@%s", name, version),
-			"line":     0,
-			"severity": "HIGH",
-			"message":  fmt.Sprintf("%s %s: %s%s", vulnID, name, truncate(desc, 80), fixVer),
-			"cwe":      vulnID,
-			"tool":     "pip-audit",
-		})
+		for _, v := range vulns {
+			vuln, ok := v.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			vulnID, _ := vuln["id"].(string)
+			desc, _ := vuln["description"].(string)
+			fix, _ := vuln["fix_versions"].([]interface{})
+
+			fixVer := ""
+			if len(fix) > 0 {
+				fixVer = fmt.Sprintf(" (fix: %v)", fix[0])
+			}
+
+			findings = append(findings, map[string]interface{}{
+				"path":     fmt.Sprintf("requirements.txt → %s@%s", name, version),
+				"line":     0,
+				"severity": "HIGH",
+				"message":  fmt.Sprintf("%s %s: %s%s", vulnID, name, truncate(desc, 80), fixVer),
+				"cwe":      vulnID,
+				"tool":     "pip-audit",
+			})
+		}
 	}
 
 	return map[string]interface{}{"sca": findings}, nil

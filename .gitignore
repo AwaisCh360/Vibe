@@ -60,3 +60,6 @@ Thumbs.db
 
 # Docker files
 docker-compose.override.yml
+tester_linux
+tester
+scratch_local/vuln_repos/
