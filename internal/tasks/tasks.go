@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+type OnToolComplete func(toolName string, toolResult map[string]interface{}, err error)
+
 // ScanError captures a tool-level failure that occurred during a scan.
 type ScanError struct {
 	Tool    string `json:"tool"`
@@ -35,7 +37,7 @@ func maxConcurrency() int {
 			return n
 		}
 	}
-	return 5
+	return 3
 }
 
 // toolTimeout returns the per-tool execution timeout.
@@ -70,7 +72,7 @@ func withTimeout(name string, run func(ctx context.Context) toolResult) func() t
 
 // runParallel executes a set of named tool functions concurrently up to the
 // configured concurrency limit and returns aggregated results + per-tool errors.
-func runParallel(dirPath string, runners []func() toolResult) (map[string][]interface{}, []ScanError) {
+func runParallel(dirPath string, runners []func() toolResult, cb OnToolComplete) (map[string][]interface{}, []ScanError) {
 	sem := make(chan struct{}, maxConcurrency())
 	ch := make(chan toolResult, len(runners))
 	var wg sync.WaitGroup
@@ -96,15 +98,21 @@ func runParallel(dirPath string, runners []func() toolResult) (map[string][]inte
 	for res := range ch {
 		if res.err != nil {
 			scanErrors = append(scanErrors, ScanError{Tool: res.name, Message: res.err.Error()})
+			if cb != nil {
+				cb(res.name, nil, res.err)
+			}
 			continue
 		}
 		mergeResultss(categorized, res.result)
+		if cb != nil {
+			cb(res.name, res.result, nil)
+		}
 	}
 	return categorized, scanErrors
 }
 
 // runParallelAdvanced is identical to runParallel but seeds with advanced categories.
-func runParallelAdvanced(dirPath string, runners []func() toolResult) (map[string][]interface{}, []ScanError) {
+func runParallelAdvanced(dirPath string, runners []func() toolResult, cb OnToolComplete) (map[string][]interface{}, []ScanError) {
 	sem := make(chan struct{}, maxConcurrency())
 	ch := make(chan toolResult, len(runners))
 	var wg sync.WaitGroup
@@ -130,14 +138,20 @@ func runParallelAdvanced(dirPath string, runners []func() toolResult) (map[strin
 	for res := range ch {
 		if res.err != nil {
 			scanErrors = append(scanErrors, ScanError{Tool: res.name, Message: res.err.Error()})
+			if cb != nil {
+				cb(res.name, nil, res.err)
+			}
 			continue
 		}
 		mergeResultss(categorized, res.result)
+		if cb != nil {
+			cb(res.name, res.result, nil)
+		}
 	}
 	return categorized, scanErrors
 }
 
-func RunScanTask(repositoryURL, language string) map[string]interface{} {
+func RunScanTask(repositoryURL string, languages []string, cb OnToolComplete) map[string]interface{}{
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Error().Str("repo", repositoryURL).Msgf("panic recovered during scan: %v", r)
@@ -153,20 +167,12 @@ func RunScanTask(repositoryURL, language string) map[string]interface{} {
 		}
 	}
 
-	if language == "" {
-		language = utils.DetectRepoLanguage(dirPath)
-		logger.Info().Str("repo", repositoryURL).Str("language", language).Msg("language detected")
-	} else {
-		if err := utils.RemoveNonRelevantFiles(dirPath, language); err != nil {
-			logger.Error().Str("repo", repositoryURL).Err(err).Msg("failed to remove non-relevant files")
-			return map[string]interface{}{
-				"status": "failed",
-				"error":  err.Error(),
-			}
-		}
+	if len(languages) == 0 {
+		languages = utils.DetectRepoLanguages(dirPath)
+		logger.Info().Str("repo", repositoryURL).Strs("languages", languages).Msg("languages detected")
 	}
 
-	categorizedResults, scanErrors, err := RunSimpleScan(dirPath, language)
+	categorizedResults, scanErrors, err := RunSimpleScan(dirPath, languages, cb)
 	if err != nil {
 		return map[string]interface{}{
 			"status": "failed",
@@ -179,27 +185,19 @@ func RunScanTask(repositoryURL, language string) map[string]interface{} {
 	return categorizedResults
 }
 
-func RunScanTaskLocal(repoPath, language string) map[string]interface{} {
+func RunScanTaskLocal(repoPath string, languages []string, cb OnToolComplete) map[string]interface{}{
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Error().Str("path", repoPath).Msgf("panic recovered during scan: %v", r)
 		}
 	}()
 
-	if language == "" {
-		language = utils.DetectRepoLanguage(repoPath)
-		logger.Info().Str("path", repoPath).Str("language", language).Msg("language detected")
-	} else {
-		if err := utils.RemoveNonRelevantFiles(repoPath, language); err != nil {
-			logger.Error().Str("path", repoPath).Err(err).Msg("failed to remove non-relevant files")
-			return map[string]interface{}{
-				"status": "failed",
-				"error":  err.Error(),
-			}
-		}
+	if len(languages) == 0 {
+		languages = utils.DetectRepoLanguages(repoPath)
+		logger.Info().Str("path", repoPath).Strs("languages", languages).Msg("languages detected")
 	}
 
-	categorizedResults, scanErrors, err := RunSimpleScanLocal(repoPath, language)
+	categorizedResults, scanErrors, err := RunSimpleScanLocal(repoPath, languages, cb)
 	if err != nil {
 		return map[string]interface{}{
 			"status": "failed",
@@ -212,7 +210,7 @@ func RunScanTaskLocal(repoPath, language string) map[string]interface{} {
 	return categorizedResults
 }
 
-func AdvancedScanRepositoryTask(repositoryURL, language string) map[string]interface{} {
+func AdvancedScanRepositoryTask(repositoryURL string, languages []string, cb OnToolComplete) map[string]interface{}{
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Error().Str("repo", repositoryURL).Msgf("panic recovered during advanced scan: %v", r)
@@ -228,20 +226,12 @@ func AdvancedScanRepositoryTask(repositoryURL, language string) map[string]inter
 		}
 	}
 
-	if language == "" {
-		language = utils.DetectRepoLanguage(dirPath)
-		logger.Info().Str("repo", repositoryURL).Str("language", language).Msg("language detected")
-	} else {
-		if err := utils.RemoveNonRelevantFiles(dirPath, language); err != nil {
-			logger.Error().Str("repo", repositoryURL).Err(err).Msg("failed to remove non-relevant files")
-			return map[string]interface{}{
-				"status": "failed",
-				"error":  err.Error(),
-			}
-		}
+	if len(languages) == 0 {
+		languages = utils.DetectRepoLanguages(dirPath)
+		logger.Info().Str("repo", repositoryURL).Strs("languages", languages).Msg("languages detected")
 	}
 
-	categorizedResults, scanErrors, err := RunAdvancedScans(dirPath, language)
+	categorizedResults, scanErrors, err := RunAdvancedScans(dirPath, languages, cb)
 	if err != nil {
 		logger.Error().Str("repo", repositoryURL).Err(err).Msg("advanced scan failed")
 		return map[string]interface{}{
@@ -259,7 +249,7 @@ func AdvancedScanRepositoryTask(repositoryURL, language string) map[string]inter
 // config's tool allow/block lists, then appends any configured plugins.
 func applyProjectConfig(
 	dirPath string,
-	language string,
+	languages []string,
 	runners []func() toolResult,
 	namedRunners []string, // parallel slice of tool names (same order as runners)
 	cfg *config.ArmurConfig,
@@ -283,7 +273,7 @@ func applyProjectConfig(
 	// Append plugin runners for applicable plugins.
 	for _, plugin := range cfg.Plugins {
 		plugin := plugin // capture loop var
-		if plugin.Language != "" && plugin.Language != language {
+		if plugin.Language != "" && !containsStr(languages, plugin.Language) {
 			continue
 		}
 		filtered = append(filtered, withTimeout(plugin.Name, func(ctx context.Context) toolResult {
@@ -296,42 +286,27 @@ func applyProjectConfig(
 }
 
 // RunSimpleScan runs the standard tool suite concurrently and returns results.
-func RunSimpleScan(dirPath string, language string) (map[string]interface{}, []ScanError, error) {
-	runners, names := buildSimpleScanRunnersNamed(dirPath, language)
-	if cfg, err := config.LoadProjectConfig(dirPath); err == nil {
-		runners = applyProjectConfig(dirPath, language, runners, names, cfg)
-	}
-	categorized, scanErrors := runParallel(dirPath, runners)
-
-	if err := os.RemoveAll(dirPath); err != nil {
-		return nil, scanErrors, fmt.Errorf("failed to remove directory: %v", err)
-	}
-	newCatResult := utils.ConvertCategorizedResults(categorized)
-	return utils.ReformatScanResults(newCatResult), scanErrors, nil
+func RunSimpleScan(dirPath string, languages []string, cb OnToolComplete) (map[string]interface{}, []ScanError, error){
+	basic, _ := GetScanTools(languages)
+	return RunCustomScans(dirPath, languages, basic, cb)
 }
 
 // RunSimpleScanLocal is RunSimpleScan without directory cleanup (for local paths).
-func RunSimpleScanLocal(dirPath string, language string) (map[string]interface{}, []ScanError, error) {
-	runners, names := buildSimpleScanRunnersNamed(dirPath, language)
-	if cfg, err := config.LoadProjectConfig(dirPath); err == nil {
-		runners = applyProjectConfig(dirPath, language, runners, names, cfg)
-	}
-	categorized, scanErrors := runParallel(dirPath, runners)
-
-	newCatResult := utils.ConvertCategorizedResults(categorized)
-	return utils.ReformatScanResults(newCatResult), scanErrors, nil
+func RunSimpleScanLocal(dirPath string, languages []string, cb OnToolComplete) (map[string]interface{}, []ScanError, error) {
+	basic, _ := GetScanTools(languages)
+	return RunCustomScansLocal(dirPath, languages, basic, cb)
 }
 
 // buildSimpleScanRunners returns the set of tool runners for a standard scan.
 // Each runner is wrapped with a per-tool timeout.
-func buildSimpleScanRunners(dirPath, language string) []func() toolResult {
-	runners, _ := buildSimpleScanRunnersNamed(dirPath, language)
+func buildSimpleScanRunners(dirPath string, languages []string) []func() toolResult {
+	runners, _ := buildSimpleScanRunnersNamed(dirPath, languages)
 	return runners
 }
 
 // buildSimpleScanRunnersNamed is like buildSimpleScanRunners but also returns the
 // tool name for each runner (parallel slices) so callers can apply config filtering.
-func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult, []string) {
+func buildSimpleScanRunnersNamed(dirPath string, languages []string) ([]func() toolResult, []string) {
 	runners := []func() toolResult{
 		withTimeout("semgrep", func(ctx context.Context) toolResult {
 			r, err := tools.RunSemgrep(ctx, dirPath, "--config=auto", nil)
@@ -340,7 +315,8 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 	}
 	names := []string{"semgrep"}
 
-	switch language {
+	for _, language := range languages {
+		switch language {
 	case "go":
 		runners = append(runners,
 			withTimeout("gosec", func(ctx context.Context) toolResult {
@@ -541,14 +517,19 @@ func buildSimpleScanRunnersNamed(dirPath, language string) ([]func() toolResult,
 			}),
 		)
 		names = append(names, "shellcheck")
+		}
 	}
 
 	return runners, names
 }
 
 // RunAdvancedScans runs the full advanced tool suite concurrently.
-func RunAdvancedScans(dirPath string, language string) (map[string]interface{}, []ScanError, error) {
-	runners := []func() toolResult{
+
+func buildAllScanRunnersNamed(dirPath string, languages []string) ([]func() toolResult, []string) {
+	runners1, names1 := buildSimpleScanRunnersNamed(dirPath, languages)
+	
+	// inline buildAdvancedScanRunners logic but return runners and names
+	runners2 := []func() toolResult{
 		withTimeout("jscpd", func(ctx context.Context) toolResult {
 			r, err := tools.RunJSCPD(ctx, dirPath, nil)
 			return toolResult{"jscpd", r, err}
@@ -581,32 +562,37 @@ func RunAdvancedScans(dirPath string, language string) (map[string]interface{}, 
 			return toolResult{"cdxgen", map[string]interface{}{"sbom_generated": true}, nil}
 		}),
 	}
+	names2 := []string{"jscpd", "checkov", "trufflehog", "trivy", "osv-scanner", "grype", "cdxgen"}
 
-	switch language {
-	case "go":
-		runners = append(runners, withTimeout("deadcode", func(ctx context.Context) toolResult {
-			r, err := tools.RunGoDeadcode(ctx, dirPath)
-			return toolResult{"deadcode", r, err}
-		}))
-	case "py":
-		runners = append(runners, withTimeout("vulture", func(ctx context.Context) toolResult {
-			r, err := tools.RunVulture(ctx, dirPath, nil)
-			return toolResult{"vulture", r, err}
-		}))
-	case "js":
-		runners = append(runners, withTimeout("eslint-advanced", func(ctx context.Context) toolResult {
-			r, err := tools.RunESLintAdvanced(ctx, dirPath)
-			return toolResult{"eslint-advanced", r, err}
-		}))
+	for _, language := range languages {
+		switch language {
+		case "go":
+			runners2 = append(runners2, withTimeout("deadcode", func(ctx context.Context) toolResult {
+				r, err := tools.RunGoDeadcode(ctx, dirPath)
+				return toolResult{"deadcode", r, err}
+			}))
+			names2 = append(names2, "deadcode")
+		case "py":
+			runners2 = append(runners2, withTimeout("vulture", func(ctx context.Context) toolResult {
+				r, err := tools.RunVulture(ctx, dirPath, nil)
+				return toolResult{"vulture", r, err}
+			}))
+			names2 = append(names2, "vulture")
+		case "js":
+			runners2 = append(runners2, withTimeout("eslint-advanced", func(ctx context.Context) toolResult {
+				r, err := tools.RunESLintAdvanced(ctx, dirPath)
+				return toolResult{"eslint-advanced", r, err}
+			}))
+			names2 = append(names2, "eslint-advanced")
+		}
 	}
 
-	categorized, scanErrors := runParallelAdvanced(dirPath, runners)
+	return append(runners1, runners2...), append(names1, names2...)
+}
 
-	if err := os.RemoveAll(dirPath); err != nil {
-		return nil, scanErrors, fmt.Errorf("failed to remove directory: %v", err)
-	}
-	newCatResult := utils.ConvertCategorizedResults(categorized)
-	return utils.ReformatAdvancedScanResults(newCatResult), scanErrors, nil
+func RunAdvancedScans(dirPath string, languages []string, cb OnToolComplete) (map[string]interface{}, []ScanError, error){
+	_, full := GetScanTools(languages)
+	return RunCustomScans(dirPath, languages, full, cb)
 }
 
 func mergeResultss(categorizedResults map[string][]interface{}, newResults map[string]interface{}) {
@@ -656,7 +642,7 @@ func ScanFileTask(filePath string) (map[string]interface{}, error) {
 		return map[string]interface{}{"status": "failed", "error": err.Error()}, err
 	}
 
-	categorizedResults, scanErrors, err := RunSimpleScan(filePath, language)
+	categorizedResults, scanErrors, err := RunSimpleScan(filePath, []string{language}, nil)
 	if err != nil {
 		logger.Error().Str("file", filePath).Err(err).Msg("scan failed")
 		return map[string]interface{}{"status": "failed", "error": err.Error()}, err
@@ -666,4 +652,170 @@ func ScanFileTask(filePath string) (map[string]interface{}, error) {
 	}
 
 	return categorizedResults, nil
+}
+
+func containsStr(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
+}
+
+func injectToolName(result map[string]interface{}, toolName string) {
+	for _, val := range result {
+		if slice, ok := val.([]interface{}); ok {
+			for _, item := range slice {
+				if finding, ok := item.(map[string]interface{}); ok {
+					finding["tool"] = toolName
+				}
+			}
+		} else if sliceMap, ok := val.([]map[string]interface{}); ok {
+			for _, finding := range sliceMap {
+				finding["tool"] = toolName
+			}
+		}
+	}
+}
+
+func GetToolNamesForScan(category string, toolsToRun []string) []string {
+	if len(toolsToRun) > 0 {
+		return toolsToRun
+	}
+	if category == "basic" {
+		basicTools, _ := GetScanTools([]string{})
+		return basicTools
+	}
+	var names []string
+	for _, t := range GetRegisteredTools() {
+		names = append(names, t.Name)
+	}
+	return names
+}
+
+func RunCustomScansTask(repositoryURL string, languages []string, toolsToRun []string, cb OnToolComplete) map[string]interface{} {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Error().Str("repo", repositoryURL).Msgf("panic recovered during custom scan: %v", r)
+		}
+	}()
+
+	dirPath, err := utils.CloneRepo(repositoryURL)
+	if err != nil {
+		return map[string]interface{}{"status": "failed", "error": err.Error()}
+	}
+
+	if len(languages) == 0 {
+		languages = utils.DetectRepoLanguages(dirPath)
+	}
+
+	categorizedResults, scanErrors, err := RunCustomScans(dirPath, languages, toolsToRun, cb)
+	if err != nil {
+		return map[string]interface{}{"status": "failed", "error": err.Error()}
+	}
+	if len(scanErrors) > 0 {
+		categorizedResults["scan_errors"] = scanErrors
+	}
+	return categorizedResults
+}
+
+func RunCustomScans(dirPath string, languages []string, toolsToRun []string, cb OnToolComplete) (map[string]interface{}, []ScanError, error) {
+	runners, names := buildAllScanRunnersNamed(dirPath, languages)
+	if cfg, err := config.LoadProjectConfig(dirPath); err == nil {
+		runners = applyProjectConfig(dirPath, languages, runners, names, cfg)
+	}
+	
+	var cdxgenRunners []func() toolResult
+	var filteredRunners []func() toolResult
+	for i, run := range runners {
+		if containsStr(toolsToRun, names[i]) {
+			if names[i] == "cdxgen" {
+				cdxgenRunners = append(cdxgenRunners, run)
+			} else {
+				filteredRunners = append(filteredRunners, run)
+			}
+		}
+	}
+
+	categorized := utils.InitCategorizedResults()
+	var scanErrors []ScanError
+
+	// Run cdxgen first synchronously so SBOM is generated for SCA tools
+	if len(cdxgenRunners) > 0 {
+		catCdxgen, errsCdxgen := runParallel(dirPath, cdxgenRunners, cb)
+		scanErrors = append(scanErrors, errsCdxgen...)
+		for k, v := range catCdxgen {
+			categorized[k] = append(categorized[k], v...)
+		}
+	}
+
+	catRest, errsRest := runParallel(dirPath, filteredRunners, cb)
+	scanErrors = append(scanErrors, errsRest...)
+	for k, v := range catRest {
+		categorized[k] = append(categorized[k], v...)
+	}
+
+	if err := os.RemoveAll(dirPath); err != nil {
+		return nil, scanErrors, fmt.Errorf("failed to remove directory: %v", err)
+	}
+	newCatResult := utils.ConvertCategorizedResults(categorized)
+	return utils.ReformatScanResults(newCatResult), scanErrors, nil
+}
+
+// GetScanTools returns the names of tools for basic and full scans based on languages.
+func GetScanTools(languages []string) (basic []string, full []string) {
+	basic = []string{"semgrep", "trufflehog", "grype", "trivy", "osv-scanner", "checkov", "cdxgen", "jscpd"}
+	full = append([]string{}, basic...)
+
+	for _, language := range languages {
+		switch language {
+		case "go":
+			full = append(full, "gosec", "golint", "govet", "staticcheck", "gocyclo", "govulncheck", "deadcode")
+		case "py":
+			full = append(full, "bandit", "pydocstyle", "radon", "pylint", "pip-audit", "vulture")
+		case "js":
+			full = append(full, "eslint", "eslint-advanced")
+		case "rust":
+			full = append(full, "cargo-audit", "cargo-geiger", "clippy")
+		case "java":
+			full = append(full, "spotbugs", "pmd", "dependency-check")
+		case "ruby":
+			full = append(full, "brakeman", "bundler-audit")
+		case "php":
+			full = append(full, "phpcs", "psalm", "local-php-security-checker")
+		case "c":
+			full = append(full, "cppcheck", "flawfinder")
+		case "iac":
+			full = append(full, "hadolint", "tfsec", "kics", "kube-linter", "kube-score", "kubesec")
+		case "sol":
+			full = append(full, "slither", "mythril")
+		case "csharp":
+			full = append(full, "security-scan", "roslynator")
+		case "swift":
+			full = append(full, "swiftlint")
+		case "sh":
+			full = append(full, "shellcheck")
+		}
+	}
+	return basic, full
+}
+
+func RunCustomScansLocal(dirPath string, languages []string, toolsToRun []string, cb OnToolComplete) (map[string]interface{}, []ScanError, error) {
+	runners, names := buildAllScanRunnersNamed(dirPath, languages)
+	if cfg, err := config.LoadProjectConfig(dirPath); err == nil {
+		runners = applyProjectConfig(dirPath, languages, runners, names, cfg)
+	}
+	
+	var filteredRunners []func() toolResult
+	for i, run := range runners {
+		if containsStr(toolsToRun, names[i]) {
+			filteredRunners = append(filteredRunners, run)
+		}
+	}
+
+	categorized, scanErrors := runParallel(dirPath, filteredRunners, cb)
+
+	newCatResult := utils.ConvertCategorizedResults(categorized)
+	return utils.ReformatScanResults(newCatResult), scanErrors, nil
 }

@@ -5,13 +5,18 @@ import (
 
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
 
 // RunGrype runs Grype vulnerability scanner on a container image or directory.
 func RunGrype(ctx context.Context, target string, options map[string]interface{}) (map[string]interface{}, error) {
-	args := ApplyOptions([]string{target, "-o", "json"}, options)
+	runTarget := target
+	if _, err := os.Stat(target + "/bom.json"); err == nil {
+		runTarget = "sbom:" + target + "/bom.json"
+	}
+	args := ApplyOptions([]string{runTarget, "-o", "json"}, options)
 	cmd := exec.CommandContext(ctx, "grype", args...)
 	output, err := cmd.Output()
 	if err != nil {
@@ -38,49 +43,85 @@ func RunTrivyImage(ctx context.Context, imageRef string) (map[string]interface{}
 }
 
 func parseGrypeOutput(output []byte) (map[string]interface{}, error) {
-	var result struct {
-		Matches []struct {
-			Vulnerability struct {
-				ID          string `json:"id"`
-				Severity    string `json:"severity"`
-				Description string `json:"description"`
-				Fix         struct {
-					Versions []string `json:"versions"`
-				} `json:"fix"`
-			} `json:"vulnerability"`
-			Artifact struct {
-				Name    string `json:"name"`
-				Version string `json:"version"`
-				Type    string `json:"type"`
-				PURL    string `json:"purl"`
-			} `json:"artifact"`
-		} `json:"matches"`
+	var raw struct {
+		Matches []map[string]interface{} `json:"matches"`
 	}
-
-	if err := json.Unmarshal(output, &result); err != nil {
+	
+	if err := json.Unmarshal(output, &raw); err != nil {
 		return map[string]interface{}{"sca": []interface{}{}}, nil
 	}
 
 	findings := []interface{}{}
-	for _, m := range result.Matches {
+	for _, m := range raw.Matches {
+		vuln, _ := m["vulnerability"].(map[string]interface{})
+		artifact, _ := m["artifact"].(map[string]interface{})
+		
+		id, _ := vuln["id"].(string)
+		sev, _ := vuln["severity"].(string)
+		desc, _ := vuln["description"].(string)
+		
 		fixVer := ""
-		if len(m.Vulnerability.Fix.Versions) > 0 {
-			fixVer = fmt.Sprintf(" → Fix: %s", m.Vulnerability.Fix.Versions[0])
+		if fix, ok := vuln["fix"].(map[string]interface{}); ok {
+			if versions, ok := fix["versions"].([]interface{}); ok && len(versions) > 0 {
+				if v, ok := versions[0].(string); ok {
+					fixVer = fmt.Sprintf(" → Fix: %s", v)
+				}
+			}
 		}
 
-		desc := m.Vulnerability.Description
 		if len(desc) > 120 {
 			desc = desc[:117] + "..."
 		}
 
-		findings = append(findings, map[string]interface{}{
-			"path":     fmt.Sprintf("%s@%s", m.Artifact.Name, m.Artifact.Version),
+		artName, _ := artifact["name"].(string)
+		artVer, _ := artifact["version"].(string)
+
+		path := fmt.Sprintf("%s@%s", artName, artVer)
+		
+		// Extract locations if available
+		if locations, ok := artifact["locations"].([]interface{}); ok && len(locations) > 0 {
+			if loc, ok := locations[0].(map[string]interface{}); ok {
+				if p, ok := loc["path"].(string); ok {
+					path = p // Use the actual file path!
+				}
+			}
+		}
+
+		finding := map[string]interface{}{
+			"path":     path,
+			"package":  artName,
+			"installed_version": artVer,
 			"line":     0,
-			"severity": strings.ToUpper(m.Vulnerability.Severity),
-			"message":  fmt.Sprintf("%s: %s%s", m.Vulnerability.ID, desc, fixVer),
-			"cwe":      m.Vulnerability.ID,
+			"severity": strings.ToUpper(sev),
+			"message":  fmt.Sprintf("%s: %s%s", id, desc, fixVer),
+			"cwe":      id,
 			"tool":     "grype",
-		})
+			"vulnerability_id": id,
+		}
+		
+		if fix, ok := vuln["fix"].(map[string]interface{}); ok {
+			if versions, ok := fix["versions"].([]interface{}); ok && len(versions) > 0 {
+				if v, ok := versions[0].(string); ok {
+					finding["fixed_version"] = v
+				}
+			}
+		}
+		
+		if dataSource, ok := vuln["dataSource"].(string); ok {
+			finding["url"] = dataSource
+		}
+		
+		if cvss, ok := vuln["cvss"].([]interface{}); ok && len(cvss) > 0 {
+			if cvss0, ok := cvss[0].(map[string]interface{}); ok {
+				if metrics, ok := cvss0["metrics"].(map[string]interface{}); ok {
+					if baseScore, ok := metrics["baseScore"].(float64); ok {
+						finding["likelihood"] = baseScore
+					}
+				}
+			}
+		}
+
+		findings = append(findings, finding)
 	}
 
 	return map[string]interface{}{"sca": findings}, nil

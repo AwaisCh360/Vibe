@@ -6,6 +6,7 @@ import (
 	"armur-codescanner/internal/logger"
 	utils "armur-codescanner/pkg"
 	"encoding/json"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -22,7 +23,13 @@ func RunOSVScanner(ctx context.Context, directory string) (map[string]interface{
 }
 
 func runOSVScannerOnRepo(ctx context.Context, directory string, options map[string]interface{}) (string, error) {
-	args := ApplyOptions([]string{"scan", "-r", "--format", "json", "--call-analysis", "all", directory}, options)
+	args := []string{"scan", "--format", "json"}
+	if _, err := os.Stat(directory + "/bom.json"); err == nil {
+		args = append(args, "--sbom", directory+"/bom.json")
+	} else {
+		args = append(args, "-r", "--call-analysis", "all", directory)
+	}
+	args = ApplyOptions(args, options)
 	cmd := exec.CommandContext(ctx, "osv-scanner", args...)
 	output, err := cmd.Output()
 	if err != nil {
@@ -50,9 +57,15 @@ func categorizeOSVResults(results string, directory string) map[string][]interfa
 					Version string `json:"version"`
 				} `json:"package"`
 				Vulnerabilities []struct {
-					ID       string      `json:"id"`
-					Summary  string      `json:"summary"`
-					Severity interface{} `json:"severity"`
+					ID               string                 `json:"id"`
+					Summary          string                 `json:"summary"`
+					Severity         interface{}            `json:"severity"`
+					DatabaseSpecific map[string]interface{} `json:"database_specific"`
+					Affected         []struct {
+						Ranges []struct {
+							Events []map[string]string `json:"events"`
+						} `json:"ranges"`
+					} `json:"affected"`
 				} `json:"vulnerabilities"`
 			} `json:"packages"`
 		} `json:"results"`
@@ -67,26 +80,56 @@ func categorizeOSVResults(results string, directory string) map[string][]interfa
 	for _, result := range osvResults.Results {
 		for _, packageData := range result.Packages {
 			for _, vulnerability := range packageData.Vulnerabilities {
-				categorizedVuln := map[string]interface{}{
-					"path":     strings.Replace(result.Source.Path, directory, "", 1),
-					"package":  packageData.Package.Name,
-					"version":  packageData.Package.Version,
-					"check_id": vulnerability.ID,
-					"message":  vulnerability.Summary,
-				}
-
-				switch severity := vulnerability.Severity.(type) {
-				case string:
-					categorizedVuln["severity"] = severity
-				case []interface{}:
-					severities := make([]string, len(severity))
-					for i, v := range severity {
-						if s, ok := v.(string); ok {
-							severities[i] = s
+				var fixedVersion string
+				for _, affected := range vulnerability.Affected {
+					for _, r := range affected.Ranges {
+						for _, ev := range r.Events {
+							if fixed, ok := ev["fixed"]; ok {
+								fixedVersion = fixed
+							}
 						}
 					}
-					categorizedVuln["severity"] = severities
-				default:
+				}
+
+				categorizedVuln := map[string]interface{}{
+					"path":              strings.Replace(result.Source.Path, directory, "", 1),
+					"package":           packageData.Package.Name,
+					"installed_version": packageData.Package.Version,
+					"check_id":          vulnerability.ID,
+					"message":           vulnerability.Summary,
+				}
+				if fixedVersion != "" {
+					categorizedVuln["fixed_version"] = fixedVersion
+				}
+
+				// Try to get severity from database_specific first
+				var resolvedSeverity string
+				if sev, ok := vulnerability.DatabaseSpecific["severity"].(string); ok && sev != "" {
+					resolvedSeverity = sev
+				}
+
+				if resolvedSeverity == "" {
+					switch severity := vulnerability.Severity.(type) {
+					case string:
+						resolvedSeverity = severity
+					case []interface{}:
+						for _, v := range severity {
+							if m, ok := v.(map[string]interface{}); ok {
+								if score, ok := m["score"].(string); ok {
+									resolvedSeverity = score
+									break
+								}
+							} else if s, ok := v.(string); ok {
+								resolvedSeverity = s
+								break
+							}
+						}
+					}
+				}
+
+				if resolvedSeverity != "" {
+					categorizedVuln["severity"] = resolvedSeverity
+				} else {
 					categorizedVuln["severity"] = "Unknown"
 				}
 
