@@ -10,7 +10,7 @@ import (
 
 // RunCdxgen generates a CycloneDX SBOM using cdxgen.
 func RunCdxgen(ctx context.Context, dirPath, outputPath string, options map[string]interface{}) error {
-	args := ApplyOptions([]string{"-o", outputPath, dirPath}, options)
+	args := ApplyOptions([]string{"--spec-version", "1.5", "-o", outputPath, dirPath}, options)
 	cmd := exec.CommandContext(ctx, "cdxgen", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
